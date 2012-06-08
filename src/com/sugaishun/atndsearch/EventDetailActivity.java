@@ -47,7 +47,9 @@ public class EventDetailActivity extends Activity {
 	}
 	
 	private String buildHTML() {
-		String html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\"></head><body>"
+		String css = "body,h1,h2,p{padding:0;margin:0}body{background-color:#F5F5F5;font-size:13px;padding:10px}h1{font-size:20px}h2{font-size:16px}";
+		String html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\">"
+				+ "<style type=\"text/css\">" + css + "</style></head><body>"
 				+ "<h1>" + title + "</h1>"
 				+ "<h2>date:</h2>" + "<p>" + DateHelper.shortDate(date) + "</p>"
 				+ "<h2>address:</h2>" + "<p>" + address + "</p>"

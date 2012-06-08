@@ -139,7 +139,7 @@ public class MainActivity extends Activity {
 		protected void onPreExecute() {
 			super.onPreExecute();
 			myDialog.setIndeterminate(true);
-			myDialog.setMessage("Searching...");
+			myDialog.setMessage("読込中...");
 			myDialog.setCancelable(true);
 			myDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
 				
@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
 			});
 			myDialog.setButton(
 					DialogInterface.BUTTON_NEGATIVE,
-					"Canel", 
+					"キャンセル", 
 					new DialogInterface.OnClickListener() {
 						
 				@Override
