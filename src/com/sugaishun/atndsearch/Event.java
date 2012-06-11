@@ -1,11 +1,7 @@
 package com.sugaishun.atndsearch;
 
 public class Event {
-	private String title;
-	private String date;
-	private String address;
-	private String catchcopy;
-	private String description;
+	private String title, date, address, catchcopy, description;
 	
 	public String getTitle() {
 		return title;

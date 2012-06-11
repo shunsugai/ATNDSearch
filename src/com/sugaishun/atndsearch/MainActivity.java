@@ -103,6 +103,7 @@ public class MainActivity extends Activity {
         aaPref.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinPref.setAdapter(aaPref);
     }
+    
     private void setSpinnerDate() {
     	ArrayAdapter<String> aaDate = new ArrayAdapter<String>(
     			this, android.R.layout.simple_spinner_item, dates);
@@ -139,7 +140,7 @@ public class MainActivity extends Activity {
 		protected void onPreExecute() {
 			super.onPreExecute();
 			myDialog.setIndeterminate(true);
-			myDialog.setMessage("読込中...");
+			myDialog.setMessage("読み込んでいます…");
 			myDialog.setCancelable(true);
 			myDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
 				
@@ -182,7 +183,6 @@ public class MainActivity extends Activity {
 				}
 				//Prepare HttpClient
 				DefaultHttpClient httpClient = new DefaultHttpClient();
-				Log.d(TAG, "getEntityData()ÇÃíÜÅBDefaultHttpClientçÏê¨");
 				
 				if(isCancelled()) {
 					Log.d(TAG, "doInBackground()内のHttpClientでtry~する前にキャンセル");

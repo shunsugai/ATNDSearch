@@ -59,16 +59,6 @@ public class EventAdapter extends BaseAdapter {
 							ViewGroup.LayoutParams.WRAP_CONTENT,
 							ViewGroup.LayoutParams.WRAP_CONTENT);
 			
-			//too long‚Ètitle‚ðÈ—ª
-//			if(title.length() > 40) {
-//				title = title.substring(0, 40) + "É";
-//			}
-//			if(catchcopy.length() > 24) {
-//				catchcopy = catchcopy.substring(0, 23) + "É";
-//			}
-			
-			//param.setMargins(0, 0, 0, 0);
-
 			v_date = new TextView(context);
 			v_date.setText(DateHelper.shortDate(date) + " " + DateHelper.time(date));
 			v_date.setTextSize(12f);

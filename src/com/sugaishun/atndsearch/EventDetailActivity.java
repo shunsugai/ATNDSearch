@@ -51,9 +51,9 @@ public class EventDetailActivity extends Activity {
 		String html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\">"
 				+ "<style type=\"text/css\">" + css + "</style></head><body>"
 				+ "<h1>" + title + "</h1>"
-				+ "<h2>date:</h2>" + "<p>" + DateHelper.shortDate(date) + "</p>"
-				+ "<h2>address:</h2>" + "<p>" + address + "</p>"
-				+ "<h2>description:</h2>" + TextileToHtml(description) 
+				+ "<h2>日時:</h2>" + "<p>" + DateHelper.shortDate(date) + " " + DateHelper.time(date) + "</p>"
+				+ "<h2>場所:</h2>" + "<p>" + address + "</p>"
+				+ "<h2>イベント概要:</h2>" + TextileToHtml(description) 
 				+ "</body></html>";
 		return html;
 	}
