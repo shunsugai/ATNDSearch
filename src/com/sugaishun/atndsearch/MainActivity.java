@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,6 +39,7 @@ public class MainActivity extends Activity {
 	private GetDataTask getData;
 	private String keyword, prefecture, result;
 	private String ym = null;
+	private Handler handler;
 	private JSONArray eventArray;
 	
 	private static final String[] prefectures = {
@@ -96,7 +98,6 @@ public class MainActivity extends Activity {
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
 				prefecture = null;
-				Log.d(TAG, "prefecture == null");
 			}
         });
 
@@ -132,8 +133,9 @@ public class MainActivity extends Activity {
 		private AlertDialog.Builder adb;
 		
 		public GetDataTask() {
-			this.myDialog = new ProgressDialog(MainActivity.this);
-			this.adb = new AlertDialog.Builder(MainActivity.this);
+			myDialog = new ProgressDialog(MainActivity.this);
+			adb = new AlertDialog.Builder(MainActivity.this);
+			handler = new Handler();
 		}
 		
 		@Override
@@ -147,17 +149,7 @@ public class MainActivity extends Activity {
 			try {
 				HttpGet url = getRequestUrl();
 				
-				if(isCancelled()) {
-					Log.d(TAG, "doInBackground()内のHttpClientで接続する前にキャンセル");
-					return null;
-				}
-				//Prepare HttpClient
 				DefaultHttpClient httpClient = new DefaultHttpClient();
-				
-				if(isCancelled()) {
-					Log.d(TAG, "doInBackground()内のHttpClientでtry~する前にキャンセル");
-					return null;
-				}
 				try {
 					result = httpClient.execute(url,new ResponseHandler<String>() {
 						@Override
@@ -166,17 +158,24 @@ public class MainActivity extends Activity {
 							switch (response.getStatusLine().getStatusCode()) {
 								case HttpStatus.SC_OK:
 									return EntityUtils.toString(response.getEntity(), "UTF-8");
-
 								case HttpStatus.SC_NOT_FOUND:
 									throw new RuntimeException("No data");
-								
 								default:
 									throw new RuntimeException("Connection Error");
 							}
 						}
 					});
 				} catch (Exception e) {
-					Log.d(TAG, "Exception raised: " + e.getStackTrace());
+					Log.d(TAG, "Exception raised: " + e.getStackTrace() + e.getLocalizedMessage());
+					handler.post(new Runnable(){
+
+						@Override
+						public void run() {
+							closeDialog();
+							setAlert("Connection Errorです");
+							showAlert();
+						}
+					});
 					return null;
 				} finally {
 					httpClient.getConnectionManager().shutdown();
@@ -201,16 +200,13 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(Void unused) {
 			super.onPostExecute(unused);
 			Log.d(TAG, "onPostExecute");
-			if(result == null) {
-				closeDialog();
-				setAlert("ネットワークに接続してください");
-				showAlert();
-			} else if(eventArray.length() == 0) {
+			if (result != null && eventArray.length() == 0) {
 				closeDialog();
 				setAlert("検索結果は0件でした");
 				showAlert();
-			} else {
-				Intent intent = new Intent(MainActivity.this, EventListActivity.class);
+			} else if (result != null) {
+				Intent intent = new Intent(MainActivity.this,
+						EventListActivity.class);
 				intent.putExtra("jsonArray", eventArray.toString());
 				startActivityForResult(intent, MYREQUEST);
 				closeDialog();
