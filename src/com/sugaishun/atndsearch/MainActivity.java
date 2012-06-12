@@ -162,14 +162,6 @@ public class MainActivity extends Activity {
 				}
 			});
 			myDialog.show();
-			
-			adb.setTitle("ATND Search");
-			adb.setMessage("検索結果は0件でした");
-			adb.setPositiveButton("もどる", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-				}
-			});
 		}
 
 		@Override
@@ -207,13 +199,8 @@ public class MainActivity extends Activity {
 					});
 				} catch (Exception e) {
 					Log.d(TAG, "Exception raised: " + e.getStackTrace());
+					return null;
 				} finally {
-					if (result != null) {
-						Log.d(TAG, result);
-					} else {
-						Log.d(TAG, "result is null");
-					}
-
 					httpClient.getConnectionManager().shutdown();
 					Log.d(TAG, "Connection closed");
 				}
@@ -227,7 +214,7 @@ public class MainActivity extends Activity {
 				eventArray = rootObject.getJSONArray("events");
 				Log.d(TAG, "Set data to eventArray");
 			} catch (Exception e) {
-				e.printStackTrace();
+				Log.d(TAG, "Exception raised: " + e.getStackTrace());
 			}
 			return null;
 		}
@@ -236,15 +223,19 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(Void unused) {
 			super.onPostExecute(unused);
 			Log.d(TAG, "onPostExecute");
-			
-			if(eventArray.length() == 0) {
+			if(result == null) {
 				closeDialog();
+				setAlert("ネットワークに接続してください");
+				AlertDialog ad = adb.create();
+				ad.show();
+			} else if(eventArray.length() == 0) {
+				closeDialog();
+				setAlert("検索結果は0件でした");
 				AlertDialog ad = adb.create();
 				ad.show();
 			} else {
 				Intent intent = new Intent(MainActivity.this, EventListActivity.class);
 				intent.putExtra("jsonArray", eventArray.toString());
-				
 				startActivityForResult(intent, MYREQUEST);
 				closeDialog();
 			}
@@ -258,6 +249,16 @@ public class MainActivity extends Activity {
 			super.onCancelled();
 		}
 		
+		protected void setAlert(String message) {
+			adb.setTitle("ATND Search");
+			adb.setMessage(message);
+			adb.setPositiveButton("もどる", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+				}
+			});
+		}
+		
 		protected void closeDialog() {
 			if(myDialog != null && myDialog.isShowing())
 				myDialog.dismiss();
@@ -266,7 +267,6 @@ public class MainActivity extends Activity {
 	
 	private HttpGet getRequestUrl() {
 		Uri.Builder b = new Uri.Builder();
-		
 		b.scheme("http");
 		b.encodedAuthority("api.atnd.org");
 		b.path("/events/");
