@@ -139,31 +139,9 @@ public class MainActivity extends Activity {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			myDialog.setIndeterminate(true);
-			myDialog.setMessage("読み込んでいます…");
-			myDialog.setCancelable(true);
-			myDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-				
-				@Override
-				public void onCancel(DialogInterface dialog) {
-					getData.cancel(true);
-					Log.d(TAG, "back buttonでcancelされた！");
-				}
-			});
-			myDialog.setButton(
-					DialogInterface.BUTTON_NEGATIVE,
-					"キャンセル", 
-					new DialogInterface.OnClickListener() {
-						
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					getData.cancel(true);
-					Log.d(TAG, "cancelボタンが押された！");
-				}
-			});
-			myDialog.show();
+			showDialog();
 		}
-
+		
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
@@ -226,13 +204,11 @@ public class MainActivity extends Activity {
 			if(result == null) {
 				closeDialog();
 				setAlert("ネットワークに接続してください");
-				AlertDialog ad = adb.create();
-				ad.show();
+				showAlert();
 			} else if(eventArray.length() == 0) {
 				closeDialog();
 				setAlert("検索結果は0件でした");
-				AlertDialog ad = adb.create();
-				ad.show();
+				showAlert();
 			} else {
 				Intent intent = new Intent(MainActivity.this, EventListActivity.class);
 				intent.putExtra("jsonArray", eventArray.toString());
@@ -249,6 +225,32 @@ public class MainActivity extends Activity {
 			super.onCancelled();
 		}
 		
+		protected void showDialog() {
+			myDialog.setIndeterminate(true);
+			myDialog.setMessage("読み込んでいます…");
+			myDialog.setCancelable(true);
+			myDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+				
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					getData.cancel(true);
+					Log.d(TAG, "back buttonでcancelされた！");
+				}
+			});
+			myDialog.setButton(
+					DialogInterface.BUTTON_NEGATIVE,
+					"キャンセル", 
+					new DialogInterface.OnClickListener() {
+						
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					getData.cancel(true);
+					Log.d(TAG, "cancelボタンが押された！");
+				}
+			});
+			myDialog.show();			
+		}
+		
 		protected void setAlert(String message) {
 			adb.setTitle("ATND Search");
 			adb.setMessage(message);
@@ -257,6 +259,11 @@ public class MainActivity extends Activity {
 				public void onClick(DialogInterface dialog, int which) {
 				}
 			});
+		}
+		
+		protected void showAlert() {
+			AlertDialog ad = adb.create();
+			ad.show();
 		}
 		
 		protected void closeDialog() {
