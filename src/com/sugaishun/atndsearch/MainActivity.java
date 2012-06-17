@@ -69,8 +69,10 @@ public class MainActivity extends Activity {
 		setSearchButton();
 		setSpinnerPref();
 		setSpinnerDate();
-		
-		// Ad
+		setAd();
+	}
+    
+    private void setAd() {
 		// Create the adView
 		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
 
@@ -87,9 +89,10 @@ public class MainActivity extends Activity {
 
 		// Initiate a generic request to load it with an ad
 		adView.loadAd(adrequest);
-	}
-    
-    private void setSearchButton() {
+		// adView.loadAd(new AdRequest());	
+    }
+
+	private void setSearchButton() {
         Button button = (Button) this.findViewById(R.id.button1);
         button.setOnClickListener(new OnClickListener(){
 
