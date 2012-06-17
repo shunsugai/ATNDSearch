@@ -13,6 +13,10 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.google.ads.AdRequest;
+import com.google.ads.AdSize;
+import com.google.ads.AdView;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -30,6 +34,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 public class MainActivity extends Activity {
@@ -41,6 +46,9 @@ public class MainActivity extends Activity {
 	private String ym = null;
 	private Handler handler;
 	private JSONArray eventArray;
+	
+	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
+	private AdView adView;
 	
 	private static final String[] prefectures = {
 		"全国", "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", 
@@ -55,13 +63,31 @@ public class MainActivity extends Activity {
 	
     /** Called when the activity is first created. */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        setSearchButton();
-        setSpinnerPref();
-        setSpinnerDate();
-    }
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+		setSearchButton();
+		setSpinnerPref();
+		setSpinnerDate();
+		
+		// Ad
+		// Create the adView
+		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
+
+		// Lookup your LinearLayout assuming it’s been given
+		// the attribute android:id="@+id/mainLayout"
+		LinearLayout layout = (LinearLayout) findViewById(R.id.footer);
+
+		// Add the adView to it
+		layout.addView(adView);
+
+		// for Test
+		AdRequest adrequest = new AdRequest();
+		adrequest.addTestDevice(AdRequest.TEST_EMULATOR);
+
+		// Initiate a generic request to load it with an ad
+		adView.loadAd(adrequest);
+	}
     
     private void setSearchButton() {
         Button button = (Button) this.findViewById(R.id.button1);

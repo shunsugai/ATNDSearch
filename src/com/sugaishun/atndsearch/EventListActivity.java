@@ -7,11 +7,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.ads.AdRequest;
+import com.google.ads.AdSize;
+import com.google.ads.AdView;
+
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 public class EventListActivity extends ListActivity {
@@ -19,6 +24,8 @@ public class EventListActivity extends ListActivity {
 	private static final int MYREQUEST = 2;
 	private EventAdapter adapter;
 	private List<Event> events;
+	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
+	private AdView adView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +34,20 @@ public class EventListActivity extends ListActivity {
 		Intent intent = getIntent();
 		jsonArrayToEvent(intent.getStringExtra("jsonArray"));
 		setAdapter();
+
+		// Ad
+		// Create the adView
+		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
+
+		// Lookup your LinearLayout assuming it’s been given
+		// the attribute android:id="@+id/mainLayout"
+		LinearLayout layout = (LinearLayout) findViewById(R.id.footer);
+
+		// Add the adView to it
+		layout.addView(adView);
+
+		// Initiate a generic request to load it with an ad
+		adView.loadAd(new AdRequest());
 	}
 	
 	@Override
