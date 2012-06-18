@@ -40,15 +40,13 @@ import android.widget.Spinner;
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
 	private static final int MYREQUEST = 1;
-	
+	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
+	private AdView adView;
 	private GetDataTask getData;
 	private String keyword, prefecture, result;
 	private String ym = null;
 	private Handler handler;
 	private JSONArray eventArray;
-	
-	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
-	private AdView adView;
 	
 	private static final String[] prefectures = {
 		"全国", "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", 

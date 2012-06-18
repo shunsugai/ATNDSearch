@@ -6,18 +6,23 @@ import com.google.ads.AdView;
 
 import net.java.textilej.parser.markup.textile.TextileDialect;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.MotionEvent;
 import android.webkit.WebView;
 import android.widget.LinearLayout;
 
 public class EventDetailActivity extends Activity {
-//	private static final String TAG = EventDetailActivity.class.getSimpleName();
-	WebView browser;
-	private Intent intent;
-	private String title, date, address, description;
+	private static final String TAG = EventDetailActivity.class.getSimpleName();
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private AdView adView;
+	private WebView browser;
+	private Intent intent;
+	private String title, date, address, description;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +32,7 @@ public class EventDetailActivity extends Activity {
 		setBrowser();
 		setAd();
 	}
-	
+
 	private void setAd() {
 		// Create the adView
 		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
@@ -58,6 +63,38 @@ public class EventDetailActivity extends Activity {
 		browser = (WebView) findViewById(R.id.Webkit);
 		browser.loadDataWithBaseURL("empty", buildHTML(), "text/html", "UTF-8", null);
 	}
+	
+//	class MyWebView extends WebView {
+//		private Context context;
+//		private GestureDetector gesDetect;
+//		
+//		public MyWebView(Context context) {
+//			super(context);
+//			this.context = context;
+//			gesDetect = new GestureDetector(context, onGestureListener);
+//		}
+//		
+//		@Override
+//		public boolean onTouchEvent(MotionEvent event) {
+//			gesDetect.onTouchEvent(event);
+//			return false;
+//		}
+//		
+//		SimpleOnGestureListener onGestureListener = new SimpleOnGestureListener() {
+//			@Override
+//			public boolean onDown(MotionEvent e) {
+//				return super.onDown(e);
+//			}
+//
+//			@Override
+//			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+//				Log.v(TAG, "x: " + velocityX);
+//				if (velocityX < -1000)
+//					finish();
+//				return super.onFling(e1, e2, velocityX, velocityY);
+//			}
+//		};
+//	}
 	
 	private String TextileToHtml(String text) {
 		String html = "";
