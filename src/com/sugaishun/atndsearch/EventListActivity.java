@@ -21,10 +21,10 @@ import android.widget.ListView;
 
 public class EventListActivity extends ListActivity {
 	private static final String TAG = EventListActivity.class.getSimpleName();
+	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private static final int MYREQUEST = 2;
 	private EventAdapter adapter;
 	private List<Event> events;
-	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private AdView adView;
 
 	@Override
@@ -34,8 +34,10 @@ public class EventListActivity extends ListActivity {
 		Intent intent = getIntent();
 		jsonArrayToEvent(intent.getStringExtra("jsonArray"));
 		setAdapter();
-
-		// Ad
+		setAd();	
+	}
+	
+	private void setAd() {
 		// Create the adView
 		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
 
@@ -49,7 +51,7 @@ public class EventListActivity extends ListActivity {
 		// Initiate a generic request to load it with an ad
 		adView.loadAd(new AdRequest());
 	}
-	
+
 	@Override
 	protected void onListItemClick(ListView parent, View v, int position, long id) {
 		Intent intent = new Intent(this, EventDetailActivity.class);
@@ -70,25 +72,21 @@ public class EventListActivity extends ListActivity {
 
 	private void jsonArrayToEvent(String jsonArray) {
 		try {
-			JSONArray array = new JSONArray(jsonArray);
-			Log.d(TAG, "JsonArray‚ðŽó‚¯Žæ‚Á‚½");
-			
+			JSONArray array = new JSONArray(jsonArray);			
 			events = new ArrayList<Event>();
 			
 			if(array != null) {
 				for(int i = 0; i < array.length(); i++) {
 					JSONObject jsonObject = array.getJSONObject(i);
-					Event e = new Event();
-					e.setTitle(jsonObject.getString("title"));					
-					e.setDate(jsonObject.getString("started_at"));
-					e.setAddress(jsonObject.getString("address"));
-					e.setCatchcopy(jsonObject.getString("catch"));
-					e.setDescription(jsonObject.getString("description"));
-					events.add(e);
+					Event event = new Event();
+					event.setTitle(jsonObject.getString("title"));					
+					event.setDate(jsonObject.getString("started_at"));
+					event.setAddress(jsonObject.getString("address"));
+					event.setCatchcopy(jsonObject.getString("catch"));
+					event.setDescription(jsonObject.getString("description"));
+					events.add(event);
 				}
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		} catch (JSONException e) { e.printStackTrace(); }
 	}
 }
