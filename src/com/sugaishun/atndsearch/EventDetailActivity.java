@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -20,7 +21,7 @@ public class EventDetailActivity extends Activity {
 	private static final String TAG = EventDetailActivity.class.getSimpleName();
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private AdView adView;
-	private WebView browser;
+	private MyWebView browser;
 	private Intent intent;
 	private String title, date, address, description;
 	
@@ -60,41 +61,60 @@ public class EventDetailActivity extends Activity {
 	}
 	
 	private void setBrowser() {
-		browser = (WebView) findViewById(R.id.Webkit);
+		browser = (MyWebView) findViewById(R.id.Webkit);
 		browser.loadDataWithBaseURL("empty", buildHTML(), "text/html", "UTF-8", null);
 	}
 	
-//	class MyWebView extends WebView {
-//		private Context context;
-//		private GestureDetector gesDetect;
-//		
-//		public MyWebView(Context context) {
-//			super(context);
-//			this.context = context;
-//			gesDetect = new GestureDetector(context, onGestureListener);
-//		}
-//		
-//		@Override
-//		public boolean onTouchEvent(MotionEvent event) {
-//			gesDetect.onTouchEvent(event);
-//			return false;
-//		}
-//		
-//		SimpleOnGestureListener onGestureListener = new SimpleOnGestureListener() {
-//			@Override
-//			public boolean onDown(MotionEvent e) {
-//				return super.onDown(e);
-//			}
-//
-//			@Override
-//			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-//				Log.v(TAG, "x: " + velocityX);
-//				if (velocityX < -1000)
-//					finish();
-//				return super.onFling(e1, e2, velocityX, velocityY);
-//			}
-//		};
-//	}
+	class MyWebView extends WebView {
+		private Context context;
+		private GestureDetector gesDetect;
+		
+		public MyWebView(Context context) {
+			super(context);
+			this.context = context;
+			gesDetect = new GestureDetector(context, onGestureListener);
+		}
+		
+		public MyWebView(Context context, AttributeSet attrs, int defStyle,
+				boolean privateBrowsing) {
+			super(context, attrs, defStyle, privateBrowsing);
+			this.context = context;
+			gesDetect = new GestureDetector(context, onGestureListener);
+		}
+
+		public MyWebView(Context context, AttributeSet attrs, int defStyle) {
+			super(context, attrs, defStyle);
+			this.context = context;
+			gesDetect = new GestureDetector(context, onGestureListener);
+		}
+
+		public MyWebView(Context context, AttributeSet attrs) {
+			super(context, attrs);
+			this.context = context;
+			gesDetect = new GestureDetector(context, onGestureListener);
+		}
+
+		@Override
+		public boolean onTouchEvent(MotionEvent event) {
+			gesDetect.onTouchEvent(event);
+			return false;
+		}
+		
+		SimpleOnGestureListener onGestureListener = new SimpleOnGestureListener() {
+			@Override
+			public boolean onDown(MotionEvent e) {
+				return super.onDown(e);
+			}
+
+			@Override
+			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+				Log.v(TAG, "x: " + velocityX);
+				if (velocityX < -1000)
+					finish();
+				return super.onFling(e1, e2, velocityX, velocityY);
+			}
+		};
+	}
 	
 	private String TextileToHtml(String text) {
 		String html = "";
