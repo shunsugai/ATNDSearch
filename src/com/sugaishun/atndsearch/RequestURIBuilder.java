@@ -17,10 +17,9 @@ public class RequestURIBuilder {
 		this.keyword = keyword;
 		this.prefecture = prefecture;
 		this.period = period;
-		Log.d(TAG, "KEYWORD:"+keyword+" PREFECTURE:"+prefecture+" PERIOD:"+period);
 	}
 	
-	public HttpGet getRequestURI() {		
+	public HttpGet getRequestURI() {	
 		Uri.Builder builder = new Uri.Builder();
 		builder.scheme("http");
 		builder.encodedAuthority("api.atnd.org");
@@ -34,62 +33,54 @@ public class RequestURIBuilder {
 			builder.appendQueryParameter("keyword", prefecture);
 		
 		Calendar now = Calendar.getInstance();
-		int intY = now.get(Calendar.YEAR);
-		int intM = now.get(Calendar.MONTH) + 1;
-		int intD = now.get(Calendar.DATE);
-		int intW = now.get(Calendar.DAY_OF_WEEK);
-		String ymd = "";
+		int dayOfWeek = now.get(Calendar.DAY_OF_WEEK);
 
 		switch (period) {
 		case 0: // all
 			break;
 		case 1: // today
-			ymd = String.format("%04d%02d%02d", intY, intM, intD);			
-			builder.appendQueryParameter("ymd", ymd);
+			builder.appendQueryParameter("ymd", getStringDate(now));
 			break;
 		case 2: // tomorrow
 			now.add(Calendar.DAY_OF_MONTH, 1);
-			intY = now.get(Calendar.YEAR);
-			intM = now.get(Calendar.MONTH) + 1;
-			intD = now.get(Calendar.DATE);
-			ymd = String.format("%04d%02d%02d", intY, intM, intD);
-			builder.appendQueryParameter("ymd", ymd);
+			builder.appendQueryParameter("ymd", getStringDate(now));
 			break;
 		case 3: // this week
-			for(int i = 0; i < (8 - intW); i++) {
+			for(int i = 0; i < (8 - dayOfWeek); i++) {
 				now.add(Calendar.DAY_OF_MONTH, 1);
-				intY = now.get(Calendar.YEAR);
-				intM = now.get(Calendar.MONTH) + 1;
-				intD = now.get(Calendar.DATE);
-				ymd = String.format("%04d%02d%02d", intY, intM, intD);
-				builder.appendQueryParameter("ymd", ymd);
+				builder.appendQueryParameter("ymd", getStringDate(now));
 			}
 			break;
 		case 4: // next week
-			now.add(Calendar.DAY_OF_MONTH, 8 - intW);
+			now.add(Calendar.DAY_OF_MONTH, 8 - dayOfWeek);
 			for(int i = 0; i < 7; i++) {
 				now.add(Calendar.DAY_OF_MONTH, 1);
-				intY = now.get(Calendar.YEAR);
-				intM = now.get(Calendar.MONTH) + 1;
-				intD = now.get(Calendar.DATE);
-				ymd = String.format("%04d%02d%02d", intY, intM, intD);
-				builder.appendQueryParameter("ymd", ymd);
+				builder.appendQueryParameter("ymd", getStringDate(now));
 			}
 			break;
 		case 5: // this month
-			ymd = String.format("%04d%02d", intY, intM);	
-			builder.appendQueryParameter("ym", ymd);
+			builder.appendQueryParameter("ym", getStringMonth(now));
 			break;
 		case 6: // next month
 			now.add(Calendar.MONTH, 1);
-			intY = now.get(Calendar.YEAR);
-			intM = now.get(Calendar.MONTH) + 1;
-			ymd = String.format("%04d%02d", intY, intM);
-			builder.appendQueryParameter("ym", ymd);
+			builder.appendQueryParameter("ym", getStringMonth(now));
 			break;
 		}
 		
 		HttpGet requestUrl = new HttpGet(builder.build().toString());
 		return requestUrl;
+	}
+	
+	private String getStringDate(Calendar now) {
+		int year = now.get(Calendar.YEAR);
+		int month = now.get(Calendar.MONTH) + 1;
+		int date = now.get(Calendar.DATE);
+		return String.format("%04d%02d%02d", year, month, date);
+	}
+	
+	private String getStringMonth(Calendar now) {
+		int year = now.get(Calendar.YEAR);
+		int month = now.get(Calendar.MONTH) + 1;
+		return String.format("%04d%02d", year, month);
 	}
 }
