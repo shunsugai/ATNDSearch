@@ -4,12 +4,12 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <com.sugaishun.atndsearch.MyWebView
+    <WebView
         android:id="@+id/Webkit"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1" >
-    </com.sugaishun.atndsearch.MyWebView>
+    </WebView>
 
     <LinearLayout
         android:layout_width="fill_parent"
