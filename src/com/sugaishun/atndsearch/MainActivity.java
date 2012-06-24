@@ -89,7 +89,6 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				EditText text = (EditText) findViewById(R.id.editText1);
 				keyword = text.getText().toString();
-				Log.d(TAG, keyword);
 				getData = new GetDataTask();
 				getData.execute();
 			}
@@ -126,8 +125,7 @@ public class MainActivity extends Activity {
 
 		spinDate.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View v,
-					int position, long id) {
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
 				period = position;
 			}
 
@@ -171,25 +169,19 @@ public class MainActivity extends Activity {
 							new ResponseHandler<String>() {
 								@Override
 								public String handleResponse(HttpResponse response)
-										throws ClientProtocolException,
-										IOException {
+										throws ClientProtocolException, IOException {
 									switch (response.getStatusLine()
 											.getStatusCode()) {
 									case HttpStatus.SC_OK:
-										return EntityUtils.toString(
-												response.getEntity(), "UTF-8");
+										return EntityUtils.toString(response.getEntity(), "UTF-8");
 									case HttpStatus.SC_NOT_FOUND:
 										throw new RuntimeException("No data");
 									default:
-										throw new RuntimeException(
-												"Connection Error");
+										throw new RuntimeException("Connection Error");
 									}
 								}
 							});
 				} catch (Exception e) {
-					Log.d(TAG,
-							"Exception raised: " + e.getStackTrace()
-									+ e.getLocalizedMessage());
 					handler.post(new Runnable() {
 
 						@Override
@@ -202,7 +194,6 @@ public class MainActivity extends Activity {
 					return null;
 				} finally {
 					httpClient.getConnectionManager().shutdown();
-					Log.d(TAG, "Connection closed");
 				}
 
 				if (isCancelled()) {
