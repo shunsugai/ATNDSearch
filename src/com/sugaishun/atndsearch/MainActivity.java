@@ -1,29 +1,11 @@
 package com.sugaishun.atndsearch;
 
-import java.io.IOException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.google.ads.AdRequest;
 import com.google.ads.AdSize;
 import com.google.ads.AdView;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,14 +19,11 @@ import android.widget.Spinner;
 
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
-	private static final int MYREQUEST = 1;
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private AdView adView;
 	private GetDataTask getData;
-	private String keyword, prefecture, result;
+	private String keyword, prefecture;
 	private int period;
-	private Handler handler;
-	private JSONArray eventArray;
 
 	private static final String[] prefectures = { "全国", 
 			"北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", 
@@ -89,7 +68,8 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				EditText text = (EditText) findViewById(R.id.editText1);
 				keyword = text.getText().toString();
-				getData = new GetDataTask();
+				RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
+				getData = new GetDataTask(MainActivity.this, rub.getRequestURI());
 				getData.execute();
 			}
 		});
@@ -137,141 +117,5 @@ public class MainActivity extends Activity {
 
 		aaDate.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinDate.setAdapter(aaDate);
-	}
-
-	// HTMLRequest AsyncTask
-	class GetDataTask extends AsyncTask<Void, String, Void> {
-		private ProgressDialog myDialog;
-		private AlertDialog.Builder adb;
-
-		public GetDataTask() {
-			myDialog = new ProgressDialog(MainActivity.this);
-			adb = new AlertDialog.Builder(MainActivity.this);
-			handler = new Handler();
-		}
-
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			showDialog();
-		}
-
-		@Override
-		protected Void doInBackground(Void... params) {
-			try {
-				RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
-				HttpGet url = rub.getRequestURI();
-				Log.d(TAG, "URL:" + url.getURI().toString());
-
-				DefaultHttpClient httpClient = new DefaultHttpClient();
-				try {
-					result = httpClient.execute(url,
-							new ResponseHandler<String>() {
-								@Override
-								public String handleResponse(HttpResponse response)
-										throws ClientProtocolException, IOException {
-									switch (response.getStatusLine()
-											.getStatusCode()) {
-									case HttpStatus.SC_OK:
-										return EntityUtils.toString(response.getEntity(), "UTF-8");
-									case HttpStatus.SC_NOT_FOUND:
-										throw new RuntimeException("No data");
-									default:
-										throw new RuntimeException("Connection Error");
-									}
-								}
-							});
-				} catch (Exception e) {
-					handler.post(new Runnable() {
-
-						@Override
-						public void run() {
-							closeDialog();
-							setAlert("Connection Errorです");
-							showAlert();
-						}
-					});
-					return null;
-				} finally {
-					httpClient.getConnectionManager().shutdown();
-				}
-
-				if (isCancelled()) {
-					Log.d(TAG, "doInBackground()内のHttpClientで接続した後でキャンセル");
-					return null;
-				}
-
-				JSONObject rootObject = new JSONObject(result);
-				eventArray = rootObject.getJSONArray("events");
-				Log.d(TAG, "Set data to eventArray");
-			} catch (Exception e) {
-				Log.d(TAG, "Exception raised: " + e.getStackTrace());
-			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void unused) {
-			super.onPostExecute(unused);
-			if (result != null && eventArray.length() == 0) {
-				closeDialog();
-				setAlert("検索結果は0件でした");
-				showAlert();
-			} else if (result != null) {
-				Intent intent = new Intent(MainActivity.this,
-						EventListActivity.class);
-				intent.putExtra("jsonArray", eventArray.toString());
-				startActivityForResult(intent, MYREQUEST);
-				closeDialog();
-			}
-		}
-
-		@Override
-		protected void onCancelled() {
-			Log.d(TAG, "onCanceled");
-			getData = null;
-			closeDialog();
-			super.onCancelled();
-		}
-
-		protected void showDialog() {
-			myDialog.setIndeterminate(true);
-			myDialog.setMessage("読み込んでいます…");
-			myDialog.setCancelable(true);
-			myDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-				@Override
-				public void onCancel(DialogInterface dialog) {
-					getData.cancel(true);
-				}
-			});
-			myDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "キャンセル",
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							getData.cancel(true);
-						}
-					});
-			myDialog.show();
-		}
-
-		protected void setAlert(String message) {
-			adb.setTitle("ATND Search");
-			adb.setMessage(message);
-			adb.setPositiveButton("もどる", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-				}
-			});
-		}
-
-		protected void showAlert() {
-			AlertDialog ad = adb.create();
-			ad.show();
-		}
-
-		protected void closeDialog() {
-			if (myDialog != null && myDialog.isShowing())
-				myDialog.dismiss();
-		}
 	}
 }
