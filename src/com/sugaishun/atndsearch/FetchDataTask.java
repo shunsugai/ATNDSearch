@@ -21,8 +21,8 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
-public class GetDataTask extends AsyncTask<Void, String, Void> {
-	private static final String TAG = GetDataTask.class.getSimpleName();
+public class FetchDataTask extends AsyncTask<Void, String, Void> {
+	private static final String TAG = FetchDataTask.class.getSimpleName();
 	private Context context;
 	private HttpGet requestUrl;
 	private ProgressDialog myDialog;
@@ -31,7 +31,7 @@ public class GetDataTask extends AsyncTask<Void, String, Void> {
 	private String result;
 	private JSONArray eventArray;
 	
-	public GetDataTask(Context context, HttpGet requestUrl) {
+	public FetchDataTask(Context context, HttpGet requestUrl) {
 		this.context = context;
 		this.requestUrl = requestUrl;
 		myDialog = new ProgressDialog(context);
@@ -113,14 +113,14 @@ public class GetDataTask extends AsyncTask<Void, String, Void> {
 		myDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
 			@Override
 			public void onCancel(DialogInterface dialog) {
-				GetDataTask.this.cancel(true);
+				FetchDataTask.this.cancel(true);
 			}
 		});
 		myDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "キャンセル", 
 				new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						GetDataTask.this.cancel(true);
+						FetchDataTask.this.cancel(true);
 					}
 				});
 		myDialog.show();
