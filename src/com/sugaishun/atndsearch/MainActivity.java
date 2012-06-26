@@ -1,5 +1,7 @@
 package com.sugaishun.atndsearch;
 
+import org.apache.http.client.methods.HttpGet;
+
 import com.google.ads.AdRequest;
 import com.google.ads.AdSize;
 import com.google.ads.AdView;
@@ -21,7 +23,7 @@ public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private AdView adView;
-	private GetDataTask getData;
+	private FetchDataTask fetchData;
 	private String keyword, prefecture;
 	private int period;
 
@@ -42,21 +44,18 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		setSearchButton();
-		setSpinnerPref();
+		setSpinnerPrefecture();
 		setSpinnerDate();
 		setAd();
 	}
 
 	private void setAd() {
 		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
-		// Lookup your LinearLayout assuming it’s been given
-		// the attribute android:id="@+id/mainLayout"
 		LinearLayout layout = (LinearLayout) findViewById(R.id.footer);
 		layout.addView(adView);
 		// for Test
 		AdRequest adrequest = new AdRequest();
 		adrequest.addTestDevice(AdRequest.TEST_EMULATOR);
-		// Initiate a generic request to load it with an ad
 		adView.loadAd(adrequest);
 		// adView.loadAd(new AdRequest());
 	}
@@ -69,21 +68,21 @@ public class MainActivity extends Activity {
 				EditText text = (EditText) findViewById(R.id.editText1);
 				keyword = text.getText().toString();
 				RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
-				getData = new GetDataTask(MainActivity.this, rub.getRequestURI());
-				getData.execute();
+				HttpGet requestURL = rub.getRequestURI();
+				fetchData = new FetchDataTask(MainActivity.this, requestURL);
+				fetchData.execute();
 			}
 		});
 	}
 
-	private void setSpinnerPref() {
+	private void setSpinnerPrefecture() {
 		ArrayAdapter<String> aaPref = new ArrayAdapter<String>(this,
 				android.R.layout.simple_spinner_item, prefectures);
 		Spinner spinPref = (Spinner) findViewById(R.id.spinner1);
 
 		spinPref.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View v,
-					int position, long id) {
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
 				prefecture = prefectures[position];
 				if (prefecture == "全国")
 					prefecture = null;
