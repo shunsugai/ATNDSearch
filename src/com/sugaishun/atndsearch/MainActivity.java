@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
@@ -71,6 +72,12 @@ public class MainActivity extends Activity {
 				HttpGet requestURL = rub.getRequestURI();
 				fetchData = new FetchDataTask(MainActivity.this, requestURL);
 				fetchData.execute();
+				fetchData.setOnCallBack(new FetchDataTask.CallBackTask(){
+					@Override
+					public void CallBack() {
+						Toast.makeText(MainActivity.this, "CallBack成功", Toast.LENGTH_SHORT).show();
+					}
+				});
 			}
 		});
 	}

@@ -30,6 +30,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	private Handler handler;
 	private String result;
 	private JSONArray eventArray;
+	private CallBackTask callBackTask;
 	
 	public FetchDataTask(Context context, HttpGet requestUrl) {
 		this.context = context;
@@ -74,6 +75,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			eventArray = rootObject.getJSONArray("events");
 		} catch (Exception e) {
 			showAlert("よくわからんエラー");
+			return null;
 		}
 		return null;
 	}
@@ -90,9 +92,10 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			return;
 		}
 		
-		Intent intent = new Intent(context, EventListActivity.class);
-		intent.putExtra("jsonArray", eventArray.toString());
-		context.startActivity(intent);
+//		Intent intent = new Intent(context, EventListActivity.class);
+//		intent.putExtra("jsonArray", eventArray.toString());
+//		context.startActivity(intent);
+		callBackTask.CallBack();
 		closeDialog();
 	}
 
@@ -100,6 +103,15 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	protected void onCancelled() {
 		closeDialog();
 		super.onCancelled();
+	}
+	
+	// CallBackの設定。試してる途中
+	public void setOnCallBack(CallBackTask _cbj) {
+		callBackTask = _cbj;
+	}
+	public static class CallBackTask {
+		public void CallBack() {
+		}
 	}
 	
 	protected void showDialog() {
