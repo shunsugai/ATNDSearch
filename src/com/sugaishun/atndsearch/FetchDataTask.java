@@ -63,7 +63,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 				}
 			});
 		} catch (Exception e) {
-			showAlert("Connection Error");
+			showAlert("ネットワークのエラーです");
 			return null;
 		} finally {
 			httpClient.getConnectionManager().shutdown();
