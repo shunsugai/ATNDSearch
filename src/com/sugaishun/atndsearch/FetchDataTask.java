@@ -95,16 +95,27 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	@Override
 	protected void onPostExecute(Void unused) {
 		super.onPostExecute(unused);
-		if (result != null && eventArray.length() == 0) {
+		if (result == null) {
+			handler.post(new Runnable() {
+				@Override
+				public void run() {
+					closeDialog();
+					setAlert("よくわからないエラーです");
+					showAlert();
+				}
+			});
+			return;
+		}
+		if (eventArray.length() == 0) {
 			closeDialog();
 			setAlert("検索結果は0件でした");
 			showAlert();
-		} else if (result != null) {
-			Intent intent = new Intent(context, EventListActivity.class);
-			intent.putExtra("jsonArray", eventArray.toString());
-			context.startActivity(intent);
-			closeDialog();
-		}
+			return;
+		} 
+		Intent intent = new Intent(context, EventListActivity.class);
+		intent.putExtra("jsonArray", eventArray.toString());
+		context.startActivity(intent);
+		closeDialog();
 	}
 
 	@Override
