@@ -1,4 +1,9 @@
 package com.sugaishun.atndsearch;
+/**
+ * 非同期処理でWebAPIを叩いてデータを取ってくるクラス。
+ * 複数のActivityから使えるようにするために、
+ * resultJSONをコールバックで渡すようにしている。
+ */
 
 import java.io.IOException;
 
