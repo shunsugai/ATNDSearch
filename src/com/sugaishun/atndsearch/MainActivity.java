@@ -63,32 +63,40 @@ public class MainActivity extends Activity {
 		adView.loadAd(adrequest);
 		// adView.loadAd(new AdRequest());
 	}
-
+	
+	// ネストが深くなるのがイヤだったので内部クラスにした。
 	private void setSearchButton() {
 		Button button = (Button) this.findViewById(R.id.button1);
-		button.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				EditText text = (EditText) findViewById(R.id.editText1);
-				keyword = text.getText().toString();
-				RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
-				HttpGet requestURL = rub.getRequestURI();
-				fetchData = new FetchDataTask(MainActivity.this, requestURL);
-				fetchData.execute();
-				fetchData.setOnCallBack(new FetchDataTask.CallBackTask(){
-					@Override
-					public void CallBack(String result) {
-						try {
-							JSONObject rootObject = new JSONObject(result);
-							JSONArray eventArray = rootObject.getJSONArray("events");
-							Intent intent = new Intent(MainActivity.this, EventListActivity.class);
-							intent.putExtra("jsonArray", eventArray.toString());
-							startActivity(intent);
-						} catch (Exception e) {}
-					}
-				});
-			}
-		});
+		button.setOnClickListener(new SearchButtonOnClickListener());
+	}
+	
+	public class SearchButtonOnClickListener implements OnClickListener {
+		@Override
+		public void onClick(View v) {
+			EditText text = (EditText) findViewById(R.id.editText1);
+			keyword = text.getText().toString();
+			
+			RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
+			HttpGet requestURL = rub.getRequestURI();
+			
+			fetchData = new FetchDataTask(MainActivity.this, requestURL);
+			fetchData.execute();
+			fetchData.setOnCallBack(new MyCallBackTask());
+		}
+	}
+	
+	public class MyCallBackTask extends FetchDataTask.CallBackTask {
+		@Override
+		public void CallBack(String result) {
+			try {
+				JSONObject rootObject = new JSONObject(result);
+				JSONArray eventArray = rootObject.getJSONArray("events");
+				
+				Intent intent = new Intent(MainActivity.this, EventListActivity.class);
+				intent.putExtra("jsonArray", eventArray.toString());
+				startActivity(intent);
+			} catch (Exception e) {}
+		}
 	}
 
 	private void setSpinnerPrefecture() {
