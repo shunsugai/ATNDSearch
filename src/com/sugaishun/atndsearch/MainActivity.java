@@ -1,12 +1,15 @@
 package com.sugaishun.atndsearch;
 
 import org.apache.http.client.methods.HttpGet;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.google.ads.AdRequest;
 import com.google.ads.AdSize;
 import com.google.ads.AdView;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -75,7 +78,13 @@ public class MainActivity extends Activity {
 				fetchData.setOnCallBack(new FetchDataTask.CallBackTask(){
 					@Override
 					public void CallBack(String result) {
-						Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+						try {
+							JSONObject rootObject = new JSONObject(result);
+							JSONArray eventArray = rootObject.getJSONArray("events");
+							Intent intent = new Intent(MainActivity.this, EventListActivity.class);
+							intent.putExtra("jsonArray", eventArray.toString());
+							startActivity(intent);
+						} catch (Exception e) {}
 					}
 				});
 			}

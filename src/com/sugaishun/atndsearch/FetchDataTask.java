@@ -9,14 +9,13 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -29,7 +28,6 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	private AlertDialog.Builder adb;
 	private Handler handler;
 	private String result;
-	private JSONArray eventArray;
 	private CallBackTask callBackTask;
 	
 	public FetchDataTask(Context context, HttpGet requestUrl) {
@@ -52,7 +50,8 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		try {
 			result = httpClient.execute(requestUrl, new ResponseHandler<String>() {
 				@Override
-				public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+				public String handleResponse(HttpResponse response) 
+						throws ClientProtocolException, IOException {
 					switch (response.getStatusLine().getStatusCode()) {
 					case HttpStatus.SC_OK:
 						return EntityUtils.toString(response.getEntity(), "UTF-8");
@@ -68,15 +67,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			return null;
 		} finally {
 			httpClient.getConnectionManager().shutdown();
-		}
-		
-//		try {
-//			JSONObject rootObject = new JSONObject(result);
-//			eventArray = rootObject.getJSONArray("events");
-//		} catch (Exception e) {
-//			showAlert("よくわからんエラー");
-//			return null;
-//		}
+		}		
 		return null;
 	}
 
@@ -87,14 +78,19 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		if (result == null)
 			return;
 		
-//		if (eventArray.length() == 0) {
-//			showAlert("検索結果は0件でした");
-//			return;
-//		}
-		
-//		Intent intent = new Intent(context, EventListActivity.class);
-//		intent.putExtra("jsonArray", eventArray.toString());
-//		context.startActivity(intent);
+		try {
+			JSONObject rootObject = new JSONObject(result);
+			int resultsReturned = rootObject.getInt("results_returned");
+			Log.d("TEST", ""+resultsReturned);
+			
+			if (resultsReturned == 0) {
+				showAlert("検索結果は0件でした");
+				return;
+			}	
+		} catch (JSONException e) {
+			showAlert("JSONエラー");
+		}
+
 		callBackTask.CallBack(result);
 		closeDialog();
 	}
