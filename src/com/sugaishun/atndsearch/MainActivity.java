@@ -74,8 +74,8 @@ public class MainActivity extends Activity {
 				fetchData.execute();
 				fetchData.setOnCallBack(new FetchDataTask.CallBackTask(){
 					@Override
-					public void CallBack() {
-						Toast.makeText(MainActivity.this, "CallBack成功", Toast.LENGTH_SHORT).show();
+					public void CallBack(String result) {
+						Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
 					}
 				});
 			}

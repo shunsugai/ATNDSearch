@@ -70,13 +70,13 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			httpClient.getConnectionManager().shutdown();
 		}
 		
-		try {
-			JSONObject rootObject = new JSONObject(result);
-			eventArray = rootObject.getJSONArray("events");
-		} catch (Exception e) {
-			showAlert("よくわからんエラー");
-			return null;
-		}
+//		try {
+//			JSONObject rootObject = new JSONObject(result);
+//			eventArray = rootObject.getJSONArray("events");
+//		} catch (Exception e) {
+//			showAlert("よくわからんエラー");
+//			return null;
+//		}
 		return null;
 	}
 
@@ -87,15 +87,15 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		if (result == null)
 			return;
 		
-		if (eventArray.length() == 0) {
-			showAlert("検索結果は0件でした");
-			return;
-		}
+//		if (eventArray.length() == 0) {
+//			showAlert("検索結果は0件でした");
+//			return;
+//		}
 		
 //		Intent intent = new Intent(context, EventListActivity.class);
 //		intent.putExtra("jsonArray", eventArray.toString());
 //		context.startActivity(intent);
-		callBackTask.CallBack();
+		callBackTask.CallBack(result);
 		closeDialog();
 	}
 
@@ -110,7 +110,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		callBackTask = _cbj;
 	}
 	public static class CallBackTask {
-		public void CallBack() {
+		public void CallBack(String result) {
 		}
 	}
 	
