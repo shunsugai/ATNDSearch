@@ -81,7 +81,6 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		try {
 			JSONObject rootObject = new JSONObject(result);
 			int resultsReturned = rootObject.getInt("results_returned");
-			Log.d("TEST", ""+resultsReturned);
 			
 			if (resultsReturned == 0) {
 				showAlert("検索結果は0件でした");
