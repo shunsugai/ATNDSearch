@@ -63,14 +63,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 				}
 			});
 		} catch (Exception e) {
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					closeDialog();
-					setAlert("Connection Error");
-					showAlert();
-				}
-			});
+			showAlert("Connection Error");
 			return null;
 		} finally {
 			httpClient.getConnectionManager().shutdown();
@@ -80,14 +73,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			JSONObject rootObject = new JSONObject(result);
 			eventArray = rootObject.getJSONArray("events");
 		} catch (Exception e) {
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					closeDialog();
-					setAlert("Connection Error");
-					showAlert();
-				}
-			});
+			showAlert("よくわからんエラー");
 		}
 		return null;
 	}
@@ -95,23 +81,15 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	@Override
 	protected void onPostExecute(Void unused) {
 		super.onPostExecute(unused);
-		if (result == null) {
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					closeDialog();
-					setAlert("よくわからないエラーです");
-					showAlert();
-				}
-			});
+		
+		if (result == null)
+			return;
+		
+		if (eventArray.length() == 0) {
+			showAlert("検索結果は0件でした");
 			return;
 		}
-		if (eventArray.length() == 0) {
-			closeDialog();
-			setAlert("検索結果は0件でした");
-			showAlert();
-			return;
-		} 
+		
 		Intent intent = new Intent(context, EventListActivity.class);
 		intent.putExtra("jsonArray", eventArray.toString());
 		context.startActivity(intent);
@@ -144,6 +122,18 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		myDialog.show();
 	}
 	
+	protected void showAlert(final String message) {
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				closeDialog();
+				setAlert(message);
+				AlertDialog ad = adb.create();
+				ad.show();
+			}
+		});
+	}
+	
 	protected void setAlert(String message) {
 		adb.setTitle("ATND Search");
 		adb.setMessage(message);
@@ -153,12 +143,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			}
 		});
 	}
-	
-	protected void showAlert() {
-		AlertDialog ad = adb.create();
-		ad.show();
-	}
-	
+		
 	protected void closeDialog() {
 		if (myDialog != null && myDialog.isShowing())
 			myDialog.dismiss();
