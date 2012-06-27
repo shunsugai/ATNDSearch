@@ -27,7 +27,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	private ProgressDialog myDialog;
 	private AlertDialog.Builder adb;
 	private Handler handler;
-	private String result;
+	private String resultJSON;
 	private CallBackTask callBackTask;
 	
 	public FetchDataTask(Context context, HttpGet requestUrl) {
@@ -48,7 +48,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	protected Void doInBackground(Void... params) {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 		try {
-			result = httpClient.execute(requestUrl, new ResponseHandler<String>() {
+			resultJSON = httpClient.execute(requestUrl, new ResponseHandler<String>() {
 				@Override
 				public String handleResponse(HttpResponse response) 
 						throws ClientProtocolException, IOException {
@@ -74,12 +74,12 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	@Override
 	protected void onPostExecute(Void unused) {
 		super.onPostExecute(unused);
-		
-		if (result == null)
+		// doInBackgroundが正常に終了しなかった場合
+		if (resultJSON == null)
 			return;
-		
+		// 検索結果が0件の場合
 		try {
-			JSONObject rootObject = new JSONObject(result);
+			JSONObject rootObject = new JSONObject(resultJSON);
 			int resultsReturned = rootObject.getInt("results_returned");
 			
 			if (resultsReturned == 0) {
@@ -89,8 +89,8 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		} catch (JSONException e) {
 			showAlert("JSONエラー");
 		}
-
-		callBackTask.CallBack(result);
+		// 正常時処理 呼び出し元にJSONを返す
+		callBackTask.CallBack(resultJSON);
 		closeDialog();
 	}
 
@@ -100,9 +100,8 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		super.onCancelled();
 	}
 	
-	// CallBackの設定。試してる途中
 	public void setOnCallBack(CallBackTask _cbj) {
-		callBackTask = _cbj;
+		this.callBackTask = _cbj;
 	}
 	public static class CallBackTask {
 		public void CallBack(String result) {
