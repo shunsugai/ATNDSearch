@@ -46,7 +46,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	}
 
 	@Override
-	protected Void doInBackground(Void... params) {			
+	protected Void doInBackground(Void... params) {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 		try {
 			result = httpClient.execute(requestUrl, new ResponseHandler<String>() {
@@ -80,7 +80,14 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			JSONObject rootObject = new JSONObject(result);
 			eventArray = rootObject.getJSONArray("events");
 		} catch (Exception e) {
-			Log.d(TAG, "Exception raised: " + e.getStackTrace());
+			handler.post(new Runnable() {
+				@Override
+				public void run() {
+					closeDialog();
+					setAlert("Connection Error");
+					showAlert();
+				}
+			});
 		}
 		return null;
 	}
