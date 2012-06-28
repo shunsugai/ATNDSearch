@@ -34,7 +34,7 @@ public class EventListActivity extends Activity {
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private static final int MYREQUEST = 2;
 	private EventAdapter eventAdapter;
-	private List<Event> events;
+	private List<Event> events = new ArrayList<Event>();
 	private AdView adView;
 	private View mFooter;
 	private ListView mListView;
@@ -154,17 +154,17 @@ public class EventListActivity extends Activity {
 	}
 
 	private void addListData(JSONArray array) {
-		events = new ArrayList<Event>();		
-		if(array != null) {
-			for(int i = 0; i < array.length(); i++) {
-				JSONObject jsonObject = null;
-				try {
-					jsonObject = array.getJSONObject(i);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-				events.add(toEvent(jsonObject));
+//				
+		if(array == null) return;
+		
+		for(int i = 0; i < array.length(); i++) {
+			JSONObject jsonObject = null;
+			try {
+				jsonObject = array.getJSONObject(i);
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
+			events.add(toEvent(jsonObject));
 		}
 	}
 
