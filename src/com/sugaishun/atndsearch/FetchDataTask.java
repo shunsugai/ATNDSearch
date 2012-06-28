@@ -44,7 +44,8 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		showDialog();
+		// 使いまわそうとするとダイアログが邪魔になる。
+//		showDialog();
 	}
 
 	@Override

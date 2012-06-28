@@ -3,6 +3,7 @@ package com.sugaishun.atndsearch;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.client.methods.HttpGet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import com.google.ads.AdRequest;
 import com.google.ads.AdSize;
 import com.google.ads.AdView;
+import com.sugaishun.atndsearch.MainActivity.MyCallBackTask;
 
 import android.app.Activity;
 import android.app.ListActivity;
@@ -17,32 +19,105 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class EventListActivity extends Activity {
 	private static final String TAG = EventListActivity.class.getSimpleName();
+	/* AdMobのID */
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private static final int MYREQUEST = 2;
-	private EventAdapter adapter;
+	private EventAdapter eventAdapter;
 	private List<Event> events;
 	private AdView adView;
 	private View mFooter;
 	private ListView mListView;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventlist);
+		
 		Intent intent = getIntent();
-		jsonArrayToEvent(intent.getStringExtra("jsonArray"));
+		String strJSONArray = intent.getStringExtra("jsonArray");
+		addListData(getJsonArray(strJSONArray));
 		
 		setAd();
+		
+		// ListViewをセット
 		ListView listView = getListView();
+		// Footerをセット
 		listView.addFooterView(getFooter());
-		adapter = new EventAdapter(EventListActivity.this, events);
-        listView.setAdapter(adapter);
-//		setAdapter();
+		// Adapterをつくる
+		eventAdapter = new EventAdapter(EventListActivity.this, events);
+        // Adapterをセット
+		listView.setAdapter(eventAdapter);
+        // リストの各要素にクリックリスナ登録
+        listView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View v, int position, long id) {
+				Intent intent = new Intent(EventListActivity.this, EventDetailActivity.class);
+				Event event = events.get(position);
+				
+				intent.putExtra("TITLE", event.getTitle());
+				intent.putExtra("DATE", event.getDate());
+				intent.putExtra("ADDRESS", event.getAddress());
+				intent.putExtra("DESCRIPTION", event.getDescription());
+				
+				startActivityForResult(intent, MYREQUEST);
+			}
+        });
+        // Footerにクリックリスナ登録
+        getFooter().setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				additionalReading();
+			}
+        });        
+	}
+	
+	private JSONArray getJsonArray(String stringExtra) {
+		JSONArray jsonArray = null;
+		try {
+			jsonArray = new JSONArray(stringExtra);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return jsonArray;
+	}
+
+	private FetchDataTask fetchData;
+	private void additionalReading() {
+		Log.d(TAG, "additionalReading()");
+		String keyword = "";
+		String prefecture = "東京";
+		int period = 0;
+		RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
+		HttpGet requestURL = rub.getRequestURI();
+		Log.d(TAG, requestURL.getURI().toString());
+		
+		fetchData = new FetchDataTask(EventListActivity.this, requestURL);
+		fetchData.execute();
+		fetchData.setOnCallBack(new MyCallBackTask());
+	}
+	
+	public class MyCallBackTask extends FetchDataTask.CallBackTask {
+		@Override
+		public void CallBack(String result) {
+			try {
+				JSONObject rootObject = new JSONObject(result);
+				JSONArray eventArray = rootObject.getJSONArray("events");
+				addListData(eventArray);
+				eventAdapter.notifyDataSetChanged();
+				getListView().invalidateViews();
+			} catch (Exception e) { e.getStackTrace(); }
+		}
 	}
 	
 	private View getFooter() {
@@ -52,20 +127,22 @@ public class EventListActivity extends Activity {
 		return mFooter;
 	}
 
+	private void invisibleFooter() {
+		getListView().removeFooterView(getFooter());
+	}
+
 	public ListView getListView() {
 		if (mListView == null) {
 			mListView = (ListView) findViewById(R.id.list);
 		}
 		return mListView;
 	}
-	
-	
 
 	private void setAd() {
 		// Create the adView
 		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
 
-		// Lookup your LinearLayout assuming it�s been given
+		// Lookup your LinearLayout assuming it’s been given
 		// the attribute android:id="@+id/mainLayout"
 		LinearLayout layout = (LinearLayout) findViewById(R.id.footer);
 
@@ -76,42 +153,32 @@ public class EventListActivity extends Activity {
 		adView.loadAd(new AdRequest());
 	}
 
-	
-//	@Override
-//	protected void onListItemClick(ListView parent, View v, int position, long id) {
-//		Intent intent = new Intent(this, EventDetailActivity.class);
-//		Event event = events.get(position);
-//		
-//		intent.putExtra("TITLE", event.getTitle());
-//		intent.putExtra("DATE", event.getDate());
-//		intent.putExtra("ADDRESS", event.getAddress());
-//		intent.putExtra("DESCRIPTION", event.getDescription());
-//		
-//		startActivityForResult(intent, MYREQUEST);
-//	}
-	
-//	private void setAdapter() {
-//		adapter = new EventAdapter(EventListActivity.this, events);
-//        setListAdapter(adapter);
-//	}
-
-	private void jsonArrayToEvent(String jsonArray) {
-		try {
-			JSONArray array = new JSONArray(jsonArray);			
-			events = new ArrayList<Event>();
-			
-			if(array != null) {
-				for(int i = 0; i < array.length(); i++) {
-					JSONObject jsonObject = array.getJSONObject(i);
-					Event event = new Event();
-					event.setTitle(jsonObject.getString("title"));					
-					event.setDate(jsonObject.getString("started_at"));
-					event.setAddress(jsonObject.getString("address"));
-					event.setCatchcopy(jsonObject.getString("catch"));
-					event.setDescription(jsonObject.getString("description"));
-					events.add(event);
+	private void addListData(JSONArray array) {
+		events = new ArrayList<Event>();		
+		if(array != null) {
+			for(int i = 0; i < array.length(); i++) {
+				JSONObject jsonObject = null;
+				try {
+					jsonObject = array.getJSONObject(i);
+				} catch (JSONException e) {
+					e.printStackTrace();
 				}
+				events.add(toEvent(jsonObject));
 			}
-		} catch (JSONException e) { e.printStackTrace(); }
+		}
+	}
+
+	private Event toEvent(JSONObject jsonObject) {
+		Event event = new Event();
+		try {
+			event.setTitle(jsonObject.getString("title"));		
+			event.setDate(jsonObject.getString("started_at"));
+			event.setAddress(jsonObject.getString("address"));
+			event.setCatchcopy(jsonObject.getString("catch"));
+			event.setDescription(jsonObject.getString("description"));
+		} catch (JSONException e) { 
+			e.printStackTrace(); 
+		}					
+		return event;
 	}
 }
