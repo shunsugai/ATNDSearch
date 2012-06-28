@@ -1,4 +1,12 @@
 package com.sugaishun.atndsearch;
+/*
+ * todo: mainactivityから渡されるデータを追加する
+ * todo: atndapiにリクエストするときの「何件目」を保持する
+ * todo: footerviewの背景
+ * todo: footerview押下時のプログレスダイアログ
+ * todo: これ以上読み込む記事ないときにfooter隠す
+ * todo: 例外発生時の挙動
+ */
 
 import java.util.ArrayList;
 import java.util.List;
