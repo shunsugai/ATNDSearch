@@ -27,7 +27,6 @@ import android.util.Log;
 
 public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	private static final String TAG = FetchDataTask.class.getSimpleName();
-	private Context context;
 	private HttpGet requestUrl;
 	private ProgressDialog myDialog;
 	private AlertDialog.Builder adb;
@@ -36,7 +35,6 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	private CallBackTask callBackTask;
 	
 	public FetchDataTask(Context context, HttpGet requestUrl) {
-		this.context = context;
 		this.requestUrl = requestUrl;
 		myDialog = new ProgressDialog(context);
 		adb = new AlertDialog.Builder(context);
