@@ -11,6 +11,7 @@ import com.google.ads.AdRequest;
 import com.google.ads.AdSize;
 import com.google.ads.AdView;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,13 +20,15 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
-public class EventListActivity extends ListActivity {
+public class EventListActivity extends Activity {
 	private static final String TAG = EventListActivity.class.getSimpleName();
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private static final int MYREQUEST = 2;
 	private EventAdapter adapter;
 	private List<Event> events;
 	private AdView adView;
+	private View mFooter;
+	private ListView mListView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +36,31 @@ public class EventListActivity extends ListActivity {
 		setContentView(R.layout.eventlist);
 		Intent intent = getIntent();
 		jsonArrayToEvent(intent.getStringExtra("jsonArray"));
-		setAdapter();
-		setAd();	
+		
+		setAd();
+		ListView listView = getListView();
+		listView.addFooterView(getFooter());
+		adapter = new EventAdapter(EventListActivity.this, events);
+        listView.setAdapter(adapter);
+//		setAdapter();
 	}
 	
+	private View getFooter() {
+		if (mFooter == null) {
+			mFooter = getLayoutInflater().inflate(R.layout.listview_footer, null);
+		}
+		return mFooter;
+	}
+
+	public ListView getListView() {
+		if (mListView == null) {
+			mListView = (ListView) findViewById(R.id.list);
+		}
+		return mListView;
+	}
+	
+	
+
 	private void setAd() {
 		// Create the adView
 		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
@@ -52,23 +76,24 @@ public class EventListActivity extends ListActivity {
 		adView.loadAd(new AdRequest());
 	}
 
-	@Override
-	protected void onListItemClick(ListView parent, View v, int position, long id) {
-		Intent intent = new Intent(this, EventDetailActivity.class);
-		Event event = events.get(position);
-		
-		intent.putExtra("TITLE", event.getTitle());
-		intent.putExtra("DATE", event.getDate());
-		intent.putExtra("ADDRESS", event.getAddress());
-		intent.putExtra("DESCRIPTION", event.getDescription());
-		
-		startActivityForResult(intent, MYREQUEST);
-	}
 	
-	private void setAdapter() {
-		adapter = new EventAdapter(EventListActivity.this, events);
-        setListAdapter(adapter);
-	}
+//	@Override
+//	protected void onListItemClick(ListView parent, View v, int position, long id) {
+//		Intent intent = new Intent(this, EventDetailActivity.class);
+//		Event event = events.get(position);
+//		
+//		intent.putExtra("TITLE", event.getTitle());
+//		intent.putExtra("DATE", event.getDate());
+//		intent.putExtra("ADDRESS", event.getAddress());
+//		intent.putExtra("DESCRIPTION", event.getDescription());
+//		
+//		startActivityForResult(intent, MYREQUEST);
+//	}
+	
+//	private void setAdapter() {
+//		adapter = new EventAdapter(EventListActivity.this, events);
+//        setListAdapter(adapter);
+//	}
 
 	private void jsonArrayToEvent(String jsonArray) {
 		try {
