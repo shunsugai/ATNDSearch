@@ -47,12 +47,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class EventListActivity extends Activity implements OnScrollListener {
+public class EventListActivity extends Activity implements OnItemClickListener {
 	private static final String TAG = EventListActivity.class.getSimpleName();
 	/* AdMobのID */
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private static final int MYREQUEST = 2;
 	private EventAdapter eventAdapter;
+	private AsyncTask<Void, String, Void> myTask;
 	private List<Event> events = new ArrayList<Event>();
 	private AdView adView;
 	private View mFooter;
@@ -61,76 +62,63 @@ public class EventListActivity extends Activity implements OnScrollListener {
 	private TextView footerText;
 	private Handler handler;
 	private ProgressBar footerProgressBar;
+	private String keyword, prefecture;
+	private int period;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventlist);
 		
+		// Intentを受け取ってEventの配列つくる
 		Intent intent = getIntent();
 		String strJSONArray = intent.getStringExtra("jsonArray");
 		addListData(getJsonArray(strJSONArray));
 		
-		setAd();
-		
-		// ListViewをセット
-		ListView listView = getListView();
-		// Footerをセット
-		listView.addFooterView(getFooter());
-		// Adapterをつくる
+		// setListView
 		eventAdapter = new EventAdapter(EventListActivity.this, events);
-        // Adapterをセット
+		ListView listView = getListView();
+		listView.addFooterView(getFooter());
 		listView.setAdapter(eventAdapter);
-        // リストの各要素にクリックリスナ登録
-        listView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View v, int position, long id) {
-				Intent intent = new Intent(EventListActivity.this, EventDetailActivity.class);
-				Event event = events.get(position);
-				
-				intent.putExtra("TITLE", event.getTitle());
-				intent.putExtra("DATE", event.getDate());
-				intent.putExtra("ADDRESS", event.getAddress());
-				intent.putExtra("DESCRIPTION", event.getDescription());
-				
-				startActivityForResult(intent, MYREQUEST);
-			}
-        });
-        listView.setOnScrollListener(this);
+        listView.setOnItemClickListener(this);
         
+        // setFooter
         footerText = (TextView) findViewById(R.id.foote_text);
-        footerText.setText("次のデータを読み込む");
+        footerText.setText("次を読み込む");
         footerProgressBar = (ProgressBar) findViewById(R.id.progressbar_small);
         footerProgressBar.setVisibility(View.GONE);
         
-        getFooter().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.atnd_list_background));
+        getFooter().setBackgroundDrawable(
+        		this.getResources().getDrawable(R.drawable.atnd_list_background));
         
         getFooter().setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				additionalReading();
+				readMore();
 			}
         });
+        
+        setAd();
 	}
 	
-	private JSONArray getJsonArray(String stringExtra) {
-		JSONArray jsonArray = null;
-		try {
-			jsonArray = new JSONArray(stringExtra);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return jsonArray;
+	@Override
+	public void onItemClick(AdapterView<?> arg0, View v, int position, long id) {
+		Intent intent = new Intent(EventListActivity.this, EventDetailActivity.class);
+		Event event = events.get(position);
+		
+		intent.putExtra("TITLE", event.getTitle());
+		intent.putExtra("DATE", event.getDate());
+		intent.putExtra("ADDRESS", event.getAddress());
+		intent.putExtra("DESCRIPTION", event.getDescription());
+		
+		startActivityForResult(intent, MYREQUEST);
 	}
-
-	private AsyncTask<Void, String, Void> myTask;
-	
-	private void additionalReading() {
+		
+	private void readMore() {
 		if (myTask != null && myTask.getStatus() == AsyncTask.Status.RUNNING) {
 			return;
 		}
 		
-		Log.d(TAG, "additionalReading()");
 		String keyword = "";
 		String prefecture = "東京";
 		int period = 0;
@@ -168,14 +156,12 @@ public class EventListActivity extends Activity implements OnScrollListener {
 				} catch (Exception e) {
 					Log.d("TEST", "Network Error");
 					resultJSON = null;
-					myTask = null;
-					onCancelled();
-					handler.post(new Runnable() {
-						@Override
-						public void run() {
-							Toast.makeText(EventListActivity.this, "結果を読み込めませんでした", Toast.LENGTH_SHORT).show();
-						}
-					});
+//					handler.post(new Runnable() {
+//						@Override
+//						public void run() {
+//							Toast.makeText(EventListActivity.this, "読み込めませんでした", Toast.LENGTH_SHORT).show();
+//						}
+//					});
 //					return null;
 				} finally {
 					httpClient.getConnectionManager().shutdown();
@@ -189,7 +175,9 @@ public class EventListActivity extends Activity implements OnScrollListener {
 				super.onPostExecute(result);
 				// doInBackgroundでエラーの場合.
 				if (resultJSON == null) {
-					myTask = null;
+					Toast.makeText(EventListActivity.this, "読み込めませんでした", Toast.LENGTH_SHORT).show();
+					footerProgressBar.setVisibility(View.GONE);
+					footerText.setText("次を読み込む");
 					return;
 				}
 				// 正常時 リストにEventオブジェクトを追加して更新
@@ -203,10 +191,25 @@ public class EventListActivity extends Activity implements OnScrollListener {
 				} finally {
 					myTask = null;
 					footerProgressBar.setVisibility(View.GONE);
-					footerText.setText("次のデータを読み込む");
+					footerText.setText("次を読み込む");
 				}
 			}
+
+			@Override
+			protected void onCancelled() {
+				Log.d(TAG, "onCanceled");
+			}			
 		}.execute();
+	}
+	
+	private JSONArray getJsonArray(String stringExtra) {
+		JSONArray jsonArray = null;
+		try {
+			jsonArray = new JSONArray(stringExtra);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return jsonArray;
 	}
 	
 	private View getFooter() {
@@ -226,22 +229,7 @@ public class EventListActivity extends Activity implements OnScrollListener {
 		}
 		return mListView;
 	}
-
-	private void setAd() {
-		// Create the adView
-		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
-
-		// Lookup your LinearLayout assuming it’s been given
-		// the attribute android:id="@+id/mainLayout"
-		LinearLayout layout = (LinearLayout) findViewById(R.id.footer);
-
-		// Add the adView to it
-		layout.addView(adView);
-
-		// Initiate a generic request to load it with an ad
-		adView.loadAd(new AdRequest());
-	}
-
+	
 	private void addListData(JSONArray array) {			
 		if(array == null) return;
 		
@@ -269,16 +257,19 @@ public class EventListActivity extends Activity implements OnScrollListener {
 		}					
 		return event;
 	}
+	
+	private void setAd() {
+		// Create the adView
+		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
 
-	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem,
-			int visibleItemCount, int totalItemCount) {
-		if (totalItemCount == firstVisibleItem + visibleItemCount) {
-//			additionalReading();
-		}
-	}
+		// Lookup your LinearLayout assuming it’s been given
+		// the attribute android:id="@+id/mainLayout"
+		LinearLayout layout = (LinearLayout) findViewById(R.id.footer);
 
-	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		// Add the adView to it
+		layout.addView(adView);
+
+		// Initiate a generic request to load it with an ad
+		adView.loadAd(new AdRequest());
 	}
 }
