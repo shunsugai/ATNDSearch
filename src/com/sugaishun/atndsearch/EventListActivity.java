@@ -8,10 +8,17 @@ package com.sugaishun.atndsearch;
  * todo: 例外発生時の挙動
  */
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,11 +26,11 @@ import org.json.JSONObject;
 import com.google.ads.AdRequest;
 import com.google.ads.AdSize;
 import com.google.ads.AdView;
-import com.sugaishun.atndsearch.MainActivity.MyCallBackTask;
 
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -34,9 +41,10 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class EventListActivity extends Activity {
+public class EventListActivity extends Activity implements OnScrollListener {
 	private static final String TAG = EventListActivity.class.getSimpleName();
 	/* AdMobのID */
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
@@ -46,6 +54,8 @@ public class EventListActivity extends Activity {
 	private AdView adView;
 	private View mFooter;
 	private ListView mListView;
+	private String resultJSON;
+	private TextView footerText;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,13 +91,10 @@ public class EventListActivity extends Activity {
 				startActivityForResult(intent, MYREQUEST);
 			}
         });
-        // Footerにクリックリスナ登録
-        getFooter().setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				additionalReading();
-			}
-        });        
+        listView.setOnScrollListener(this);
+        
+        footerText = (TextView) findViewById(R.id.foote_text);
+        footerText.setText("読み込んでいます");
 	}
 	
 	private JSONArray getJsonArray(String stringExtra) {
@@ -100,32 +107,61 @@ public class EventListActivity extends Activity {
 		return jsonArray;
 	}
 
-	private FetchDataTask fetchData;
+	private AsyncTask<Void, String, Void> myTask;
+	
 	private void additionalReading() {
+		if (myTask != null && myTask.getStatus() == AsyncTask.Status.RUNNING) {
+			return;
+		}
+		
 		Log.d(TAG, "additionalReading()");
 		String keyword = "";
 		String prefecture = "東京";
 		int period = 0;
 		RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
-		HttpGet requestURL = rub.getRequestURI();
+		final HttpGet requestURL = rub.getRequestURI();
 		Log.d(TAG, requestURL.getURI().toString());
 		
-		fetchData = new FetchDataTask(EventListActivity.this, requestURL);
-		fetchData.execute();
-		fetchData.setOnCallBack(new MyCallBackTask());
-	}
-	
-	public class MyCallBackTask extends FetchDataTask.CallBackTask {
-		@Override
-		public void CallBack(String result) {
-			try {
-				JSONObject rootObject = new JSONObject(result);
-				JSONArray eventArray = rootObject.getJSONArray("events");
-				addListData(eventArray);
-				eventAdapter.notifyDataSetChanged();
-				getListView().invalidateViews();
-			} catch (Exception e) { e.getStackTrace(); }
-		}
+		myTask = new AsyncTask<Void, String, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				DefaultHttpClient httpClient = new DefaultHttpClient();
+				try {
+					resultJSON = httpClient.execute(requestURL, new ResponseHandler<String>() {
+						@Override
+						public String handleResponse(HttpResponse response) 
+								throws ClientProtocolException, IOException {
+							switch (response.getStatusLine().getStatusCode()) {
+							case HttpStatus.SC_OK:
+								return EntityUtils.toString(response.getEntity(), "UTF-8");
+							case HttpStatus.SC_NOT_FOUND:
+								throw new RuntimeException("No data");
+							default:
+								throw new RuntimeException("Connection Error");
+							}
+						}
+					});
+				} catch (Exception e) {
+					return null;
+				} finally {
+					httpClient.getConnectionManager().shutdown();
+				}		
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(Void result) {
+				super.onPostExecute(result);
+				try {
+					JSONArray eventArray = new JSONObject(resultJSON).getJSONArray("events");
+					addListData(eventArray);
+					eventAdapter.notifyDataSetChanged();
+					getListView().invalidateViews();
+				} catch (Exception e) { 
+					e.getStackTrace(); 
+				}
+			}
+		}.execute();
 	}
 	
 	private View getFooter() {
@@ -161,8 +197,7 @@ public class EventListActivity extends Activity {
 		adView.loadAd(new AdRequest());
 	}
 
-	private void addListData(JSONArray array) {
-//				
+	private void addListData(JSONArray array) {			
 		if(array == null) return;
 		
 		for(int i = 0; i < array.length(); i++) {
@@ -188,5 +223,17 @@ public class EventListActivity extends Activity {
 			e.printStackTrace(); 
 		}					
 		return event;
+	}
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		if (totalItemCount == firstVisibleItem + visibleItemCount) {
+			additionalReading();
+		}
+	}
+
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
 	}
 }

@@ -1,9 +1,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent" android:layout_height="fill_parent"
-	android:textAppearance="?android:attr/textAppearanceLarge"
-	android:minHeight="?android:attr/listPreferredItemHeight"
-	android:gravity="center">
-	<ProgressBar android:id="@android:id/text1"
-		android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:gravity="center_vertical" />
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:background="#000000" >
+
+    <ProgressBar
+        android:id="@android:id/text1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        style="?android:attr/progressBarStyleSmall" />
+
+    <TextView
+        android:id="@+id/foote_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14dip"
+        android:layout_marginLeft="5dip"/>
+
 </LinearLayout>

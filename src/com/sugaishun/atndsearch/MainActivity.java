@@ -81,23 +81,23 @@ public class MainActivity extends Activity {
 			
 			fetchData = new FetchDataTask(MainActivity.this, requestURL);
 			fetchData.execute();
-			fetchData.setOnCallBack(new MyCallBackTask());
+//			fetchData.setOnCallBack(new MyCallBackTask());
 		}
 	}
 	
-	public class MyCallBackTask extends FetchDataTask.CallBackTask {
-		@Override
-		public void CallBack(String result) {
-			try {
-				JSONObject rootObject = new JSONObject(result);
-				JSONArray eventArray = rootObject.getJSONArray("events");
-				
-				Intent intent = new Intent(MainActivity.this, EventListActivity.class);
-				intent.putExtra("jsonArray", eventArray.toString());
-				startActivity(intent);
-			} catch (Exception e) {}
-		}
-	}
+//	public class MyCallBackTask extends FetchDataTask.CallBackTask {
+//		@Override
+//		public void CallBack(String result) {
+//			try {
+//				JSONObject rootObject = new JSONObject(result);
+//				JSONArray eventArray = rootObject.getJSONArray("events");
+//				
+//				Intent intent = new Intent(MainActivity.this, EventListActivity.class);
+//				intent.putExtra("jsonArray", eventArray.toString());
+//				startActivity(intent);
+//			} catch (Exception e) {}
+//		}
+//	}
 
 	private void setSpinnerPrefecture() {
 		ArrayAdapter<String> aaPref = new ArrayAdapter<String>(this,

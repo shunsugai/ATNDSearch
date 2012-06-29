@@ -3,6 +3,7 @@ package com.sugaishun.atndsearch;
  * 非同期処理でWebAPIを叩いてデータを取ってくるクラス。
  * 複数のActivityから使えるようにするために、
  * resultJSONをコールバックで渡すようにしている。
+ * →やっぱりパフォーマンスのために、ここからstartActivityする
  */
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,6 +23,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -32,9 +35,10 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	private AlertDialog.Builder adb;
 	private Handler handler;
 	private String resultJSON;
-	private CallBackTask callBackTask;
+	private Context context;
 	
 	public FetchDataTask(Context context, HttpGet requestUrl) {
+		this.context = context;
 		this.requestUrl = requestUrl;
 		myDialog = new ProgressDialog(context);
 		adb = new AlertDialog.Builder(context);
@@ -44,8 +48,7 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		// 使いまわそうとするとダイアログが邪魔になる。
-//		showDialog();
+		showDialog();
 	}
 
 	@Override
@@ -83,34 +86,33 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			return;
 		// 検索結果が0件の場合
 		try {
-			JSONObject rootObject = new JSONObject(resultJSON);
-			int resultsReturned = rootObject.getInt("results_returned");
+			int resultsReturned = 
+					new JSONObject(resultJSON).getInt("results_returned");
 			
 			if (resultsReturned == 0) {
 				showAlert("検索結果は0件でした");
 				return;
-			}	
+			}
+			// 正常時処理
+			JSONArray eventArray = 
+					new JSONObject(resultJSON).getJSONArray("events");
+			
+			Intent intent = new Intent(context, EventListActivity.class);
+			intent.putExtra("jsonArray", eventArray.toString());
+			context.startActivity(intent);
+
 		} catch (JSONException e) {
 			showAlert("JSONエラー");
+		} finally {
+			closeDialog();
 		}
-		// 正常時処理 呼び出し元にJSONを返す
-		callBackTask.CallBack(resultJSON);
-		closeDialog();
 	}
 
 	@Override
 	protected void onCancelled() {
 		closeDialog();
 		super.onCancelled();
-	}
-	
-	public void setOnCallBack(CallBackTask _cbj) {
-		this.callBackTask = _cbj;
-	}
-	public static class CallBackTask {
-		public void CallBack(String result) {
-		}
-	}
+	}	
 	
 	protected void showDialog() {
 		myDialog.setIndeterminate(true);
