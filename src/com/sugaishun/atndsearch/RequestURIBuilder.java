@@ -29,6 +29,7 @@ public class RequestURIBuilder {
 		builder.appendQueryParameter("start", String.valueOf(position));
 	}
 	
+	// 長すぎひどい。あとで分割する。
 	public HttpGet getRequestURI() {	
 		builder = new Uri.Builder();
 		builder.scheme("http");
