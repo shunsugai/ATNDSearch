@@ -9,9 +9,11 @@ import android.util.Log;
 
 public class RequestURIBuilder {
 	private static final String TAG = RequestURIBuilder.class.getSimpleName();
+	Uri.Builder builder;
 	private String keyword;
 	private String prefecture;
 	private int period;
+	private int startPosition = 1;
 	
 	public RequestURIBuilder(String keyword, String prefecture, int period) {
 		this.keyword = keyword;
@@ -19,13 +21,24 @@ public class RequestURIBuilder {
 		this.period = period;
 	}
 	
+	public void setStartPosition(int startPosition) {
+		this.startPosition = startPosition;
+	}
+	
+	public void appendStartPosition(int position) {
+		builder.appendQueryParameter("start", String.valueOf(position));
+	}
+	
 	public HttpGet getRequestURI() {	
-		Uri.Builder builder = new Uri.Builder();
+		builder = new Uri.Builder();
 		builder.scheme("http");
 		builder.encodedAuthority("api.atnd.org");
 		builder.path("/events/");
 		builder.appendQueryParameter("count", "20");
 		builder.appendQueryParameter("format", "json");
+		if (startPosition != 1)
+			builder.appendQueryParameter("start", String.valueOf(startPosition));
+			
 		if (keyword != null)
 			builder.appendQueryParameter("keyword", keyword);
 

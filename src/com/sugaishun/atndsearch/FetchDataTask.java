@@ -36,6 +36,8 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 	private Handler handler;
 	private String resultJSON;
 	private Context context;
+	private String keyword, prefecture;
+	private int period;
 	
 	public FetchDataTask(Context context, HttpGet requestUrl) {
 		this.context = context;
@@ -43,6 +45,12 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 		myDialog = new ProgressDialog(context);
 		adb = new AlertDialog.Builder(context);
 		handler = new Handler();
+	}
+	
+	public void setData(String keyword, String prefecture, int period) {
+		this.keyword = keyword;
+		this.prefecture = prefecture;
+		this.period = period;
 	}
 	
 	@Override
@@ -99,6 +107,9 @@ public class FetchDataTask extends AsyncTask<Void, String, Void> {
 			
 			Intent intent = new Intent(context, EventListActivity.class);
 			intent.putExtra("jsonArray", eventArray.toString());
+			intent.putExtra("KEYWORD", keyword);
+			intent.putExtra("PREFECTURE", prefecture);
+			intent.putExtra("PERIOD", period);
 			context.startActivity(intent);
 
 		} catch (JSONException e) {

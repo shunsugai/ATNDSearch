@@ -80,6 +80,7 @@ public class MainActivity extends Activity {
 			HttpGet requestURL = rub.getRequestURI();
 			
 			fetchData = new FetchDataTask(MainActivity.this, requestURL);
+			fetchData.setData(keyword, prefecture, period);
 			fetchData.execute();
 //			fetchData.setOnCallBack(new MyCallBackTask());
 		}

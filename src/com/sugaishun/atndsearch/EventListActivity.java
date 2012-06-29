@@ -64,6 +64,7 @@ public class EventListActivity extends Activity implements OnItemClickListener {
 	private ProgressBar footerProgressBar;
 	private String keyword, prefecture;
 	private int period;
+	private int counter = 1;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +75,10 @@ public class EventListActivity extends Activity implements OnItemClickListener {
 		Intent intent = getIntent();
 		String strJSONArray = intent.getStringExtra("jsonArray");
 		addListData(getJsonArray(strJSONArray));
+		
+		keyword = intent.getStringExtra("KEYWORD");
+		prefecture = intent.getStringExtra("PREFECTURE");
+		period = intent.getIntExtra("PERIOD", 0);
 		
 		// setListView
 		eventAdapter = new EventAdapter(EventListActivity.this, events);
@@ -119,10 +124,8 @@ public class EventListActivity extends Activity implements OnItemClickListener {
 			return;
 		}
 		
-		String keyword = "";
-		String prefecture = "東京";
-		int period = 0;
 		RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
+		rub.setStartPosition(counter * 20 + 1);
 		final HttpGet requestURL = rub.getRequestURI();
 		Log.d(TAG, requestURL.getURI().toString());
 		
@@ -133,6 +136,7 @@ public class EventListActivity extends Activity implements OnItemClickListener {
 				super.onPreExecute();
 				footerProgressBar.setVisibility(View.VISIBLE);
 				footerText.setText("読み込み中…");
+				counter++;
 			}
 
 			@Override
@@ -156,13 +160,6 @@ public class EventListActivity extends Activity implements OnItemClickListener {
 				} catch (Exception e) {
 					Log.d("TEST", "Network Error");
 					resultJSON = null;
-//					handler.post(new Runnable() {
-//						@Override
-//						public void run() {
-//							Toast.makeText(EventListActivity.this, "読み込めませんでした", Toast.LENGTH_SHORT).show();
-//						}
-//					});
-//					return null;
 				} finally {
 					httpClient.getConnectionManager().shutdown();
 				}
@@ -194,11 +191,6 @@ public class EventListActivity extends Activity implements OnItemClickListener {
 					footerText.setText("次を読み込む");
 				}
 			}
-
-			@Override
-			protected void onCancelled() {
-				Log.d(TAG, "onCanceled");
-			}			
 		}.execute();
 	}
 	
