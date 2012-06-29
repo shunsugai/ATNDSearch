@@ -28,10 +28,12 @@ import com.google.ads.AdSize;
 import com.google.ads.AdView;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,6 +43,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,6 +59,8 @@ public class EventListActivity extends Activity implements OnScrollListener {
 	private ListView mListView;
 	private String resultJSON;
 	private TextView footerText;
+	private Handler handler;
+	private ProgressBar footerProgressBar;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +99,18 @@ public class EventListActivity extends Activity implements OnScrollListener {
         listView.setOnScrollListener(this);
         
         footerText = (TextView) findViewById(R.id.foote_text);
-        footerText.setText("読み込んでいます");
+        footerText.setText("次のデータを読み込む");
+        footerProgressBar = (ProgressBar) findViewById(R.id.progressbar_small);
+        footerProgressBar.setVisibility(View.GONE);
+        
+        getFooter().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.atnd_list_background));
+        
+        getFooter().setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				additionalReading();
+			}
+        });
 	}
 	
 	private JSONArray getJsonArray(String stringExtra) {
@@ -123,6 +139,14 @@ public class EventListActivity extends Activity implements OnScrollListener {
 		Log.d(TAG, requestURL.getURI().toString());
 		
 		myTask = new AsyncTask<Void, String, Void>() {
+			
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+				footerProgressBar.setVisibility(View.VISIBLE);
+				footerText.setText("読み込み中…");
+			}
+
 			@Override
 			protected Void doInBackground(Void... params) {
 				DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -142,16 +166,33 @@ public class EventListActivity extends Activity implements OnScrollListener {
 						}
 					});
 				} catch (Exception e) {
-					return null;
+					Log.d("TEST", "Network Error");
+					resultJSON = null;
+					myTask = null;
+					onCancelled();
+					handler.post(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(EventListActivity.this, "結果を読み込めませんでした", Toast.LENGTH_SHORT).show();
+						}
+					});
+//					return null;
 				} finally {
 					httpClient.getConnectionManager().shutdown();
-				}		
+				}
 				return null;
 			}
 
 			@Override
 			protected void onPostExecute(Void result) {
+				Log.d("TEST", "onPostExecute()");
 				super.onPostExecute(result);
+				// doInBackgroundでエラーの場合.
+				if (resultJSON == null) {
+					myTask = null;
+					return;
+				}
+				// 正常時 リストにEventオブジェクトを追加して更新
 				try {
 					JSONArray eventArray = new JSONObject(resultJSON).getJSONArray("events");
 					addListData(eventArray);
@@ -159,6 +200,10 @@ public class EventListActivity extends Activity implements OnScrollListener {
 					getListView().invalidateViews();
 				} catch (Exception e) { 
 					e.getStackTrace(); 
+				} finally {
+					myTask = null;
+					footerProgressBar.setVisibility(View.GONE);
+					footerText.setText("次のデータを読み込む");
 				}
 			}
 		}.execute();
@@ -229,7 +274,7 @@ public class EventListActivity extends Activity implements OnScrollListener {
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
 		if (totalItemCount == firstVisibleItem + visibleItemCount) {
-			additionalReading();
+//			additionalReading();
 		}
 	}
 
