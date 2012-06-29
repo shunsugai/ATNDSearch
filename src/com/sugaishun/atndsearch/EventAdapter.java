@@ -58,6 +58,7 @@ public class EventAdapter extends BaseAdapter {
 					new LinearLayout.LayoutParams(
 							ViewGroup.LayoutParams.WRAP_CONTENT,
 							ViewGroup.LayoutParams.WRAP_CONTENT);
+			param.setMargins(3, 3, 3, 3);
 			
 			v_date = new TextView(context);
 			v_date.setText(DateHelper.shortDate(date) + " " + DateHelper.time(date));
@@ -67,7 +68,7 @@ public class EventAdapter extends BaseAdapter {
 
 			v_title = new TextView(context);
 			v_title.setText(title);
-			v_title.setTextSize(15f);
+			v_title.setTextSize(18f);
 			v_title.setTextColor(Color.BLACK);
 			v_title.setSingleLine(true);
 			v_title.setEllipsize(TextUtils.TruncateAt.END);
