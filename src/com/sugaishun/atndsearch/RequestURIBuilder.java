@@ -10,6 +10,8 @@ import android.util.Log;
 public class RequestURIBuilder {
 	private static final String TAG = RequestURIBuilder.class.getSimpleName();
 	Uri.Builder builder;
+	/* データの取得件数 */
+	private static final int count = 20;
 	private String keyword;
 	private String prefecture;
 	private int period;
@@ -35,7 +37,7 @@ public class RequestURIBuilder {
 		builder.scheme("http");
 		builder.encodedAuthority("api.atnd.org");
 		builder.path("/events/");
-		builder.appendQueryParameter("count", "20");
+		builder.appendQueryParameter("count", String.valueOf(RequestURIBuilder.count));
 		builder.appendQueryParameter("format", "json");
 		if (startPosition != 1)
 			builder.appendQueryParameter("start", String.valueOf(startPosition));
