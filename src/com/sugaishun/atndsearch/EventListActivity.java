@@ -65,6 +65,7 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 	private String keyword, prefecture;
 	private int period;
 	private int counter = 1;
+	private boolean loading = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -188,6 +189,7 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 					e.getStackTrace(); 
 				} finally {
 					myTask = null;
+					loading = false;
 					footerProgressBar.setVisibility(View.GONE);
 					footerText.setText("次を読み込む");
 				}
@@ -269,7 +271,11 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
+		if (loading) {
+			return;
+		}
 		if (totalItemCount == firstVisibleItem + visibleItemCount) {
+			loading = true;
 			readMore();
 		}
 	}
