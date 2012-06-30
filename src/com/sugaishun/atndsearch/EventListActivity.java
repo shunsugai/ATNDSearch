@@ -47,7 +47,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class EventListActivity extends Activity implements OnItemClickListener {
+public class EventListActivity extends Activity implements OnItemClickListener, OnScrollListener {
 	private static final String TAG = EventListActivity.class.getSimpleName();
 	/* AdMobのID */
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
@@ -86,6 +86,7 @@ public class EventListActivity extends Activity implements OnItemClickListener {
 		listView.addFooterView(getFooter());
 		listView.setAdapter(eventAdapter);
         listView.setOnItemClickListener(this);
+        listView.setOnScrollListener(this);
         
         // setFooter
         footerText = (TextView) findViewById(R.id.foote_text);
@@ -263,5 +264,17 @@ public class EventListActivity extends Activity implements OnItemClickListener {
 
 		// Initiate a generic request to load it with an ad
 		adView.loadAd(new AdRequest());
+	}
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		if (totalItemCount == firstVisibleItem + visibleItemCount) {
+			readMore();
+		}
+	}
+
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
 	}
 }

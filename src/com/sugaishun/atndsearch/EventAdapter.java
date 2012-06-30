@@ -68,7 +68,7 @@ public class EventAdapter extends BaseAdapter {
 
 			v_title = new TextView(context);
 			v_title.setText(title);
-			v_title.setTextSize(18f);
+			v_title.setTextSize(16f);
 			v_title.setTextColor(Color.BLACK);
 			v_title.setSingleLine(true);
 			v_title.setEllipsize(TextUtils.TruncateAt.END);

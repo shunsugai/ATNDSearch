@@ -76,6 +76,8 @@ public class MainActivity extends Activity {
 			EditText text = (EditText) findViewById(R.id.editText1);
 			keyword = text.getText().toString();
 			
+			// keyword prefecture periodをFetchDataTaskにわたして
+			// さらにそこからEventListActivityにまで渡すのがアホっぽい なんとかする
 			RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
 			HttpGet requestURL = rub.getRequestURI();
 			
