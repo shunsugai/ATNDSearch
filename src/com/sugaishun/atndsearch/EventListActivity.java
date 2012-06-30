@@ -52,31 +52,31 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 	/* AdMobのID */
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private static final int MYREQUEST = 2;
+	
+	// メンバ変数多い。
 	private EventAdapter eventAdapter;
-	private AsyncTask<Void, String, Void> myTask;
 	private List<Event> events = new ArrayList<Event>();
 	private AdView adView;
 	private View mFooter;
 	private ListView mListView;
 	private String resultJSON;
 	private TextView footerText;
-	private Handler handler;
 	private ProgressBar footerProgressBar;
 	private String keyword, prefecture;
 	private int period;
-	private int counter = 1;
-	private boolean loading = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventlist);
 		
-		// Intentを受け取ってEventの配列つくる
+		// setEvents
 		Intent intent = getIntent();
 		String strJSONArray = intent.getStringExtra("jsonArray");
 		addListData(getJsonArray(strJSONArray));
 		
+		// MainからrequestURLをつくるためのデータを受け取る。
+		// 何度もやりとりするのがダサい。もっとスマートな方法があるはず
 		keyword = intent.getStringExtra("KEYWORD");
 		prefecture = intent.getStringExtra("PREFECTURE");
 		period = intent.getIntExtra("PERIOD", 0);
@@ -91,13 +91,11 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
         
         // setFooter
         footerText = (TextView) findViewById(R.id.foote_text);
-        footerText.setText("次を読み込む");
         footerProgressBar = (ProgressBar) findViewById(R.id.progressbar_small);
-        footerProgressBar.setVisibility(View.GONE);
+        setFooterWaiting();
         
         getFooter().setBackgroundDrawable(
         		this.getResources().getDrawable(R.drawable.atnd_list_background));
-        
         getFooter().setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
@@ -107,7 +105,8 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
         
         setAd();
 	}
-	
+
+	// Listの各アイテムをクリックしたら詳細Activityへ飛ぶ
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View v, int position, long id) {
 		Intent intent = new Intent(EventListActivity.this, EventDetailActivity.class);
@@ -120,29 +119,33 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 		
 		startActivityForResult(intent, MYREQUEST);
 	}
-		
+	
+	// 「もっと読む」機能
+	private AsyncTask<Void, String, Void> myTask;
+	/* readMore()の状態 */
+	private boolean isLoading = false;
+	private int counter = 1;
+	
 	private void readMore() {
 		if (myTask != null && myTask.getStatus() == AsyncTask.Status.RUNNING) {
 			return;
 		}
 		
-		RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
-		rub.setStartPosition(counter * 20 + 1);
-		final HttpGet requestURL = rub.getRequestURI();
-		Log.d(TAG, requestURL.getURI().toString());
-		
 		myTask = new AsyncTask<Void, String, Void>() {
-			
 			@Override
 			protected void onPreExecute() {
 				super.onPreExecute();
 				footerProgressBar.setVisibility(View.VISIBLE);
 				footerText.setText("読み込み中…");
-				counter++;
 			}
 
 			@Override
 			protected Void doInBackground(Void... params) {
+				RequestURIBuilder rub = new RequestURIBuilder(keyword, prefecture, period);
+				rub.setStartPosition(counter * 20 + 1);
+				final HttpGet requestURL = rub.getRequestURI();
+				Log.d(TAG, requestURL.getURI().toString());
+				
 				DefaultHttpClient httpClient = new DefaultHttpClient();
 				try {
 					resultJSON = httpClient.execute(requestURL, new ResponseHandler<String>() {
@@ -175,8 +178,7 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 				// doInBackgroundでエラーの場合.
 				if (resultJSON == null) {
 					Toast.makeText(EventListActivity.this, "読み込めませんでした", Toast.LENGTH_SHORT).show();
-					footerProgressBar.setVisibility(View.GONE);
-					footerText.setText("次を読み込む");
+					setFooterWaiting();
 					return;
 				}
 				// 正常時 リストにEventオブジェクトを追加して更新
@@ -189,9 +191,9 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 					e.getStackTrace(); 
 				} finally {
 					myTask = null;
-					loading = false;
-					footerProgressBar.setVisibility(View.GONE);
-					footerText.setText("次を読み込む");
+					isLoading = false;
+					counter++;
+					setFooterWaiting();
 				}
 			}
 		}.execute();
@@ -253,6 +255,25 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 		return event;
 	}
 	
+	private void setFooterWaiting() {
+		footerText.setText("次を読み込む");
+        footerProgressBar.setVisibility(View.GONE);
+	}
+	
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		if (isLoading) return;
+		if (totalItemCount == firstVisibleItem + visibleItemCount) {
+			isLoading = true;
+			readMore();
+		}
+	}
+
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+	}
+	
 	private void setAd() {
 		// Create the adView
 		adView = new AdView(this, AdSize.BANNER, MY_AD_UNIT_ID);
@@ -266,21 +287,5 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 
 		// Initiate a generic request to load it with an ad
 		adView.loadAd(new AdRequest());
-	}
-
-	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem,
-			int visibleItemCount, int totalItemCount) {
-		if (loading) {
-			return;
-		}
-		if (totalItemCount == firstVisibleItem + visibleItemCount) {
-			loading = true;
-			readMore();
-		}
-	}
-
-	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
 	}
 }
