@@ -1,11 +1,6 @@
 package com.sugaishun.atndsearch;
 /*
- * todo: mainactivityから渡されるデータを追加する
- * todo: atndapiにリクエストするときの「何件目」を保持する
- * todo: footerviewの背景
- * todo: footerview押下時のプログレスダイアログ
  * todo: これ以上読み込む記事ないときにfooter隠す
- * todo: 例外発生時の挙動
  */
 
 import java.io.IOException;
@@ -53,18 +48,21 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
 	private static final int MYREQUEST = 2;
 	
-	// メンバ変数多い。
-	private EventAdapter eventAdapter;
 	private List<Event> events = new ArrayList<Event>();
-	private AdView adView;
-	private View mFooter;
-	private ListView mListView;
 	private String resultJSON;
-	private TextView footerText;
-	private ProgressBar footerProgressBar;
 	private String keyword, prefecture;
 	private int period;
-	
+
+	// ListView
+	private ListView mListView;
+	private EventAdapter eventAdapter;
+	// ListViewFooter
+	private View mFooter;
+	private TextView footerText;
+	private ProgressBar footerProgressBar;
+	// AdMob
+	private AdView adView;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -93,7 +91,6 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
         footerText = (TextView) findViewById(R.id.foote_text);
         footerProgressBar = (ProgressBar) findViewById(R.id.progressbar_small);
         setFooterWaiting();
-        
         getFooter().setBackgroundDrawable(
         		this.getResources().getDrawable(R.drawable.atnd_list_background));
         getFooter().setOnClickListener(new OnClickListener(){
