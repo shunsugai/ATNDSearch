@@ -54,7 +54,7 @@ public class EventAdapter extends BaseAdapter {
 			super(context);
 			
 			setOrientation(LinearLayout.VERTICAL);
-			setBackgroundDrawable(context.getResources().getDrawable(R.drawable.atnd_list_background));
+			setBackgroundDrawable(context.getResources().getDrawable(R.drawable.list_background));
 			setPadding(10, 5, 10, 5);
 			
 			LinearLayout.LayoutParams param = 

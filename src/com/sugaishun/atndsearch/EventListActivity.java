@@ -97,7 +97,7 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
         footerProgressBar = (ProgressBar) findViewById(R.id.progressbar_small);
         setFooterWaiting();
         getFooter().setBackgroundDrawable(
-        		this.getResources().getDrawable(R.drawable.atnd_list_background));
+        		this.getResources().getDrawable(R.drawable.list_background));
         getFooter().setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
