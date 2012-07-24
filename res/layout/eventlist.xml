@@ -18,7 +18,8 @@
             android:divider="#FFFFFF"
             android:dividerHeight="1dp"
             android:drawSelectorOnTop="false"
-            android:scrollingCache="false" />
+            android:scrollingCache="false"
+            android:fadingEdge="none" />
     </LinearLayout>
 
     <LinearLayout

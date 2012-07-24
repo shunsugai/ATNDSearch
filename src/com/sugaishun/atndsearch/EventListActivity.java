@@ -43,6 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class EventListActivity extends Activity implements OnItemClickListener, OnScrollListener {
+	/* Tag for debug */
 	private static final String TAG = EventListActivity.class.getSimpleName();
 	/* AdMobのID */
 	private static final String MY_AD_UNIT_ID = "a14fdd0d7d55ff6";
@@ -52,6 +53,7 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 	private String resultJSON;
 	private String keyword, prefecture;
 	private int period;
+	private boolean isLast = false;
 
 	// ListView
 	private ListView mListView;
@@ -71,6 +73,9 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 		// setEvents
 		Intent intent = getIntent();
 		String strJSONArray = intent.getStringExtra("jsonArray");
+		JSONArray jsonArray = getJsonArray(strJSONArray);
+		if (jsonArray.length() < 20)
+			isLast = true;
 		addListData(getJsonArray(strJSONArray));
 		
 		// MainからrequestURLをつくるためのデータを受け取る。
@@ -99,6 +104,8 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 				readMore();
 			}
         });
+        if (isLast)
+        	invisibleFooter();
         
         setAd();
 	}
@@ -181,16 +188,21 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 				// 正常時 リストにEventオブジェクトを追加して更新
 				try {
 					JSONArray eventArray = new JSONObject(resultJSON).getJSONArray("events");
+					// これ以上データがない場合
+					if (eventArray.length() == 0) {
+						Toast.makeText(EventListActivity.this, "これ以上結果はありません", Toast.LENGTH_SHORT).show();
+						invisibleFooter();
+				        isLoading = true;
+				        return;
+					}					
 					addListData(eventArray);
 					eventAdapter.notifyDataSetChanged();
 					getListView().invalidateViews();
-				} catch (Exception e) { 
-					e.getStackTrace(); 
-				} finally {
-					myTask = null;
 					isLoading = false;
 					counter++;
 					setFooterWaiting();
+				} catch (Exception e) { 
+					e.getStackTrace(); 
 				}
 			}
 		}.execute();
@@ -260,6 +272,7 @@ public class EventListActivity extends Activity implements OnItemClickListener, 
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
+		if (isLast) return;
 		if (isLoading) return;
 		if (totalItemCount == firstVisibleItem + visibleItemCount) {
 			isLoading = true;

@@ -1,6 +1,9 @@
 package com.sugaishun.atndsearch;
 
 import java.util.List;
+import java.util.Locale;
+
+import org.joda.time.DateTime;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -61,26 +64,32 @@ public class EventAdapter extends BaseAdapter {
 			param.setMargins(3, 3, 3, 3);
 			
 			v_date = new TextView(context);
-			v_date.setText(DateHelper.shortDate(date) + " " + DateHelper.time(date));
-			v_date.setTextSize(12f);
-			v_date.setTextColor(Color.GRAY);
+			v_date.setText(getFormattedDateTime(date));
+			v_date.setTextSize(13f);
+			v_date.setTextColor(Color.DKGRAY);
 			addView(v_date, param);
 
 			v_title = new TextView(context);
 			v_title.setText(title);
 			v_title.setTextSize(16f);
 			v_title.setTextColor(Color.BLACK);
-			v_title.setSingleLine(true);
+			v_title.setMaxLines(2);
+			v_title.setMinLines(2);
 			v_title.setEllipsize(TextUtils.TruncateAt.END);
 			addView(v_title, param);
 			
 			v_catchcopy = new TextView(context);
 			v_catchcopy.setText(catchcopy);
-			v_catchcopy.setTextSize(12f);
-			v_catchcopy.setTextColor(Color.GRAY);
+			v_catchcopy.setTextSize(13f);
+			v_catchcopy.setTextColor(Color.DKGRAY);
 			v_catchcopy.setSingleLine(true);
 			v_catchcopy.setEllipsize(TextUtils.TruncateAt.END);
 			addView(v_catchcopy, param);
 		}
+	}
+	
+	public String getFormattedDateTime(String ISO8601DateTime) {
+		DateTime dt = new DateTime(ISO8601DateTime);
+		return dt.toString("yyyy年MM月dd日 HH:mm", Locale.JAPAN);
 	}
 }
